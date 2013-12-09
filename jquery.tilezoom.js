@@ -18,10 +18,11 @@ function log() {
 }
 var methods = {
 	init : function( options ) {
+		
 		var defaults = {
-			width: null, // original image width in pixels. *(required) if no xml file
-			height: null, // original image height in pixels *(required) if no xml file
-			path: null, // tiles directory. *(required) if no xml file
+			width: null, // original image width in pixels. *(required) if no xml file specified
+			height: null, // original image height in pixels *(required) if no xml file specified
+			path: null, // tiles directory. *(required) if no xml file specified
 			xml: null, // xml file with settings generated with Deep Zoom Tools
 			tileSize: 254, // tile size in pixels
 			overlap: 1, // tiles overlap
@@ -29,10 +30,8 @@ var methods = {
 			format: 'jpg', // image format
 			speed: 500, //animation speed (ms)
 			mousewheel: false, // requires mousewheel event plugin: http://plugins.jquery.com/project/mousewheel
-			gestures: false, // requires touchit event plugin, https://github.com/danielglyde/TouchIt
 			zoomToCursor: true, // stay the same relative distance from the edge when zooming
 			offset: '20%', //boundaries offset (px or %). If 0 image move side to side and up to down
-			dragBoundaries: true, // If we should constrain the drag to the boundaries
 			beforeZoom: function($cont) {}, // callback before a zoom happens
             afterZoom: function($cont) {}, // callback after zoom has completed
 			callBefore: function($cont) {}, // this callback happens before dragging starts
@@ -47,6 +46,7 @@ var methods = {
 		
 		// iterate the matched nodeset
 		return this.each(function(index){
+
 			if ( options.xml != null ) {
 				var $cont = $(this);
 				initOptionsFromXml(options.xml, options, function() {
@@ -59,7 +59,9 @@ var methods = {
 		});
 	},
 	destroy : function( ) {
+	
 		return this.each(function(){
+		
 			var $cont = $(this),
 			data = $cont.data('tilezoom');
 			
@@ -70,6 +72,43 @@ var methods = {
 			}
 			$cont.html('');
 			$cont.removeData('tilezoom');
+		});
+	
+	},
+	center: function(){
+		return this.each(function(){
+		
+			var $cont = $(this);
+			var settings = $cont.data('tilezoom.settings');
+			var $holder = settings.holder;
+			var $hotspots = settings.hotspots;
+			var coords = {};
+			var level = 12;
+			
+			this.style.left;
+			
+			var left = this.style.left;
+			//if(!left) left = $hotspot.css('left');
+			
+			left = "50%"
+
+			
+			var top = this.style.top;
+			//if(!top) top = $hotspot.css('top');
+
+			top  = "50%"			
+			if(left.indexOf('%')!==-1) {
+				left = parseInt(parseFloat(left)*$holder.width()/100);
+			}
+			if(top.indexOf('%')!==-1) {
+				top = parseInt(parseFloat(top)*$holder.height()/100);
+			}
+			
+			coords.left = left;
+			coords.top = top;
+			
+			$cont.tilezoom('zoom', level, coords);
+						
 		});
 	},
 	center: function(){
@@ -121,8 +160,8 @@ var methods = {
 					checkTiles($cont);
 					//afterZoom callback
 					if(typeof settings.afterZoom == "function") {
-						settings.afterZoom($cont);
-					}
+		                settings.afterZoom($cont);
+		            }
 				});
 			}
 			else {
@@ -134,12 +173,7 @@ var methods = {
 	reposition : function( ) {},
 	show : function( ) {},
 	hide : function( ) {},
-	update : function( ) {},
-	resize : function( ) {
-		return this.each(function(){
-			setSizePosition($(this), {}, 0);
-		});
-	}
+	update : function( ) {}
 };
 
 $.fn.tilezoom = function( method ) {
@@ -149,7 +183,7 @@ $.fn.tilezoom = function( method ) {
 	} else if ( typeof method === 'object' || ! method ) {
 		return methods.init.apply( this, arguments );
 	} else {
-		$.error( 'Method ' +  method + ' does not exist on jquery.tilezoom' );
+		$.error( 'Method ' +  method + ' does not exist on jQuery.tooltip' );
 	}    
 
 };
@@ -157,6 +191,7 @@ $.fn.tilezoom = function( method ) {
 //init Tilezoom
 function initTilezoom(defaults, options, $cont, index) {
 	var settings = $.extend({}, defaults, options);
+			
 	if ( settings.width == null ) {
 		$.error( 'width is not specified' );
 	}
@@ -166,9 +201,9 @@ function initTilezoom(defaults, options, $cont, index) {
 	if ( settings.path == null ) {
 		$.error( 'path to tiles directory is not specified' );
 	}
-	settings.userAgent = navigator.userAgent.toLowerCase();
+	
 	//save zoom element index
-	settings.id = index;
+	settings.id = index;	
 	//set in action flag
 	settings.inAction = false;
 	//container
@@ -176,22 +211,20 @@ function initTilezoom(defaults, options, $cont, index) {
 	buildMarkup($cont, settings);
 	buildOptions($cont, settings);
 	initTiles($cont);
-	initHotspots($cont);
-	initNavigation($cont);
 	setSizePosition($cont, coords={}, 0, function() {
 		checkTiles($cont);
-		var isTouchSupported = (typeof(window.ontouchstart) != 'undefined');
-		if (isTouchSupported){
-			initGestures($cont);
-		} else {
-			initDraggable($cont);
-			initMousewheel($cont);
-		}	
+		initDraggable($cont);
+		initMousewheel($cont);
 	});
+	//init hotspots
+	initHotspots($cont);	
+	//init Navigation
+	initNavigation($cont);
 }
 
 //parse XML
 function initOptionsFromXml(xml, options, callback) {	
+	
 	$.ajax({
 		type: "GET",
 		url: xml,
@@ -278,11 +311,12 @@ function initLevel(settings) {
 
 function initTiles($cont, level) {
 	var settings = $cont.data('tilezoom.settings');
-	if (level == undefined) {
+	if ( level == undefined ) {
 		level = settings.level;
 	}
 	var levelDir = settings.path+'/'+parseInt(level);
 	var tiles = getTiles(level, settings);
+	
 	var $tiles = settings.tiles;
 	
 	$tiles.html('');
@@ -311,7 +345,7 @@ function getDimension(level, settings) {
 		var scale = getScale(level, settings);
 		var dimension = {};
 		dimension.width = parseInt(Math.ceil(settings.width * scale));
-		dimension.height = parseInt(Math.ceil(settings.height * scale));
+  		dimension.height = parseInt(Math.ceil(settings.height * scale));
 		return dimension;
 	}
 	else {
@@ -409,20 +443,8 @@ function initDraggable($cont) {
 	
 	$holder.unbind('mousedown');
 	$holder.unbind('mousemove');
-	
-	$holder.dblclick(function(e) {
-		var coords = {};
-		coords.x = e.pageX;
-		coords.y = e.pageY;		
-		// If we're at the high level of resolution, go back to the start level
-		var level = (settings.level < settings.numLevels - 1) ? 
-			settings.level+1 : settings.startLevel;
-		log("Double click! " + level);
-		$cont.tilezoom('zoom', level, coords);
-	});
-	
+		
 	$holder.mousedown(function(e) {
-		if(settings.inAction) return false;
 		$holder.stop(true,true);
 		$hotspots.removeClass('grab').addClass('grabbing');
 		dragging = true;
@@ -430,27 +452,25 @@ function initDraggable($cont) {
 		startTop = parseInt($holder.css('top'));
 		var startX = e.pageX;
 		var startY = e.pageY;
-		var pos = {};	
+		var pos = {};
+		
 		//callBefore callback
 		if(typeof settings.callBefore == "function") {
             settings.callBefore($cont);
         }
-		$(document).unbind("mousemove");
+		
 		$(document).mousemove(function(e) {
-			if(dragging){
+			if(dragging==true){
 				var offsetX =  e.pageX - startX;
 				var offsetY =  e.pageY - startY;
 				pos.left = startLeft+offsetX;
 				pos.top = startTop+offsetY;
-				if (settings.dragBoundaries){
-					checkBoundaries($cont, pos);
-				}
+				checkBoundaries($cont, pos);
 				$holder.css({'left': pos.left, 'top': pos.top});
 			}
 		});
 		
 		$(document).one('mouseup', function() {
-			$(document).unbind("mousemove");
 			$hotspots.removeClass('grabbing').addClass('grab');		
 			dragging = false;
 			checkTiles($cont);
@@ -478,11 +498,12 @@ function initMousewheel($cont) {
 				coords.x = e.pageX;
 				coords.y = e.pageY;
 			}
-			var level = Math.round(settings.level + delta);
+			var level = settings.level+delta;
 			$cont.tilezoom('zoom', level, coords);
 			return false;//don't scroll the window
 		});
 	}
+
 }
 
 /*
@@ -522,84 +543,10 @@ function initHotspots($cont) {
 		coords.left = left;
 		coords.top = top;
 		
-		$cont.tilezoom('zoom', level, coords);	
+		$cont.tilezoom('zoom', level, coords);
+		
 	});
-}
 
-function initGestures($cont) {
-	
-	var settings = $cont.data('tilezoom.settings');
-	var $holder = settings.holder;
-	var $nav = settings.nav;
-	
-	if(settings.gestures && typeof $.fn.touchit != "undefined") {
-		// gestures don't affect inside the container
-		$cont.bind('touchmove', function(e){
-			e.preventDefault();
-		});
-		$cont.addClass('gestures');
-		
-		var dragging = false;
-		var startLeft = 0;
-		var startTop = 0;
-		var startLevel;
-		var startX;
-		var startY;
-		var pos;
-		
-		$holder.touchit({
-			onTouchStart: function (x, y) {
-				if(settings.inAction) return false;
-				$holder.stop(true,true);
-				dragging = true;
-				pos = {};
-				startX = x;
-				startY = y;
-				startLeft = parseInt($holder.css('left'));
-				startTop = parseInt($holder.css('top'));
-				startLevel = settings.level;
-				if(typeof settings.callBefore == "function") {
-		            settings.callBefore($cont);
-		        }
-			},
-			onTouchMove: function (x, y) {
-				if(dragging){
-					var offsetX = x - startX;
-					var offsetY = y - startY;
-					pos.left = startLeft+offsetX;
-					pos.top = startTop+offsetY;
-					if (settings.dragBoundaries){
-						checkBoundaries($cont, pos);
-					}
-					$holder.css({'left': pos.left, 'top': pos.top});
-				}
-			},
-			onTouchEnd: function (x, y) {
-				dragging = false;
-				checkTiles($cont);
-				//callAfter callback
-				if(typeof settings.callAfter == "function") {
-					settings.callAfter($cont, {'startLeft':startLeft, 'startTop':startTop, 'endLeft':pos.left, 'endTop':pos.top});
-			    }
-			},
-			onDoubleTap: function (x, y) {
-				var coords = {};
-				coords.x = x;
-				coords.y = y;
-				// If we're at the high level of resolution, go back to the start level
-				var level = (settings.level < settings.numLevels - 1) ? 
-					settings.level+1 : settings.startLevel;
-				$cont.tilezoom('zoom', level, coords);
-			},
-			onPinch: function (scale) {
-				dragging = false;
-				var level = (scale > 1) ? 
-					startLevel + Math.floor(scale):
-					startLevel - Math.floor(1/scale);				
-				$cont.tilezoom('zoom', level, {});
-			}
-		});
-	}
 }
 
 /*
@@ -650,7 +597,7 @@ function initNavigation($cont) {
 	$(settings.zoomIn).click(function() {
 		var settings = $cont.data('tilezoom.settings');
 		var level = settings.level+1;
-		$cont.tilezoom('zoom', level, {});
+		$cont.tilezoom('zoom', level, coords={});
 		return false;
 	});
 	
@@ -659,7 +606,7 @@ function initNavigation($cont) {
 	$(settings.zoomOut).click(function() {
 		var settings = $cont.data('tilezoom.settings');
 		var level = settings.level-1;
-		$cont.tilezoom('zoom', level, {});
+		$cont.tilezoom('zoom', level, coords={});
 		return false;
 	});
 	
@@ -670,33 +617,13 @@ function initNavigation($cont) {
 		var $hotspots = settings.hotspots;
 		$hotspots.children().removeClass('active');
 		var level = settings.startLevel;
-		$cont.tilezoom('zoom', level, {});
+		$cont.tilezoom('zoom', level, coords={});
 		return false;
 	});
 	
 	//init toggleFull button
 	$(settings.toggleFull).unbind('click');
 	$(settings.toggleFull).click(function() {
-		var onFullScreen = function(e){
-			if (e.keyCode == 27) { // esc
-				$(settings.toggleFull).click(); 
-			}
-		}
-		if(settings.userAgent.indexOf("android") > -1) {
-			var positionStyle = 'absolute';
-		}
-		else {
-			var positionStyle = 'fixed';
-		}
-		if ($(this).hasClass('toggle-full-close')){
-			$cont.css('position', 'relative');
-			$(this).removeClass('toggle-full-close');
-			$(document).unbind("keyup", onFullScreen);
-		} else {
-			$cont.css('position', positionStyle);
-			$(this).addClass('toggle-full-close');
-			$(document).keyup(onFullScreen);
-		}
 		$cont.toggleClass('zoom-full');
 		coords = {};
 		setSizePosition($cont, coords, 0);
@@ -792,9 +719,11 @@ function setSizePosition($cont, coords ,speed, callback) {
 /*
 * Limit holder position by container boundaries
 */
-function checkBoundaries($cont, pos) {	
+function checkBoundaries($cont, pos, level) {	
 	var settings = $cont.data('tilezoom.settings');
-	var level = settings.level;
+	if(!level) {
+		level = settings.level;
+	}
 	var levelImage = getImage(level, settings);
 	var contWidth = $cont.width();
 	var contHeight = $cont.height();
@@ -804,8 +733,6 @@ function checkBoundaries($cont, pos) {
 		boundaryOffset.x = contWidth*parseInt(settings.offset)/100;
 		boundaryOffset.y = contHeight*parseInt(settings.offset)/100;
 	}
-	
-	//log("boundaryOffset ["+boundaryOffset.x+", "+boundaryOffset.y+"]");
 	
 	//boundaries
 	var minLeft = contWidth-levelImage.width-boundaryOffset.x;
@@ -825,8 +752,6 @@ function checkBoundaries($cont, pos) {
 		//move to center of container
 		pos.top = parseInt((contHeight-levelImage.height)/2);
 	}
-	
-	//log("pos [top:"+pos.top+", left:"+pos.left+"]");
 	
 	return pos;
 }
