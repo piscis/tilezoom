@@ -41,7 +41,8 @@ var methods = {
 			zoomIn: null, // zoomIn button
 			zoomOut: null, // zoomOut button
 			goHome: null, // goHome button, reset to default state
-			toggleFull: null // toggleFull button
+			toggleFull: null, // toggleFull button
+			minLevel: 9
 		}
 		
 		// iterate the matched nodeset
@@ -71,6 +72,33 @@ var methods = {
 			$cont.removeData('tilezoom');
 		});
 	},
+	center: function(){
+		return this.each(function(){
+		
+			var $cont = $(this);
+			var settings = $cont.data('tilezoom.settings');
+			var $holder = settings.holder;
+			var $hotspots = settings.hotspots;
+			var coords = {};
+			var level = 12;
+						
+			var left = "50%"			
+			var top  = "50%"			
+			
+			if(left.indexOf('%')!==-1) {
+				left = parseInt(parseFloat(left)*$holder.width()/100);
+			}
+			if(top.indexOf('%')!==-1) {
+				top = parseInt(parseFloat(top)*$holder.height()/100);
+			}
+			
+			coords.left = left;
+			coords.top = top;
+			
+			$cont.tilezoom('zoom', level, coords);
+						
+		});
+	},
 	zoom : function( level, coords ) {
 		return this.each(function(){
 		
@@ -78,11 +106,14 @@ var methods = {
 			var settings = $cont.data('tilezoom.settings');
 			if(settings.inAction) return false;
 			
-			if(9 <= level && level < settings.numLevels && level != settings.level) {
+			if(settings.minLevel <= level && level < settings.numLevels) {
 				//beforeZoom callback
 				if(typeof settings.beforeZoom == "function") {
-					settings.beforeZoom($cont);
-				}
+	                var res = settings.beforeZoom($cont);
+					if(res===false){
+						return;
+					}
+	            }
 				settings.level = level;
 				$cont.data('tilezoom.settings', settings);
 				initTiles($cont);
@@ -250,14 +281,14 @@ function initTiles($cont, level) {
 	if (level == undefined) {
 		level = settings.level;
 	}
-	var levelDir = settings.path+'/'+level;
+	var levelDir = settings.path+'/'+parseInt(level);
 	var tiles = getTiles(level, settings);
 	var $tiles = settings.tiles;
 	
 	$tiles.html('');
 	
 	$.each(tiles, function(index, tile) {
-		var src = levelDir+'/'+tile[0]+'_'+tile[1]+'.'+settings.format;
+		var src = levelDir+'/'+parseInt(tile[0])+'_'+parseInt(tile[1])+'.'+settings.format;
 		var offsetX = tile[0] == 0 ? 0 : settings.overlap;
        	var offsetY = tile[1] == 0 ? 0 : settings.overlap;
 		var id = 'zoom-'+settings.id+'-tile-'+tile[0]+'-'+tile[1];
