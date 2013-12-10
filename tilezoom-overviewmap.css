@@ -1,0 +1,18 @@
+.tilezoom-overviewmap {
+
+	position:relative;
+
+	width:920px;
+	height:130px;
+	background:url("dest/wow_files/thumb.jpg");
+	border:solid 1px black;
+}
+
+.tilezoom-overviewmap .control-rectangle {
+
+	position:absolute;
+	border:solid 2px red;
+
+	transition:all .3s linear;
+	-webkit-transition:all .3s linear;
+}
