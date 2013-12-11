@@ -31,28 +31,37 @@
 
 				var $this = $(this);
 
-				$this.data('tilezoomOverviewMap', new _TilezoomOverviewMap($this, settings));
-
-				return $this;
+				return $this.data('tilezoomOverviewMap', new _TilezoomOverviewMap($this, settings));
 			});
 		}
 	};
 
 	$.fn.tilezoomOverviewMap.defaults = {
 
-		tilezoom: null
+		tilezoom:	null,
+		thumb:		'',
+
+		duration:	500,
+		draggable:	true,
+
+		dragstop:	function ( x, y, zoomLevel ) { }
 	};
 	$.fn.tilezoomOverviewMap.version = '1.0';
 
 //	=================================================================
 //	=					Beginn der Klasse							=
 //	=================================================================
-	var _TilezoomOverviewMap = function (target, options) {
+	var _TilezoomOverviewMap = function (element, options) {
  
 		var me = this;
 
-		me.element	= target;
+		me.element	= element;
 		me.options	= options;
+
+		element.css({
+
+			background: 'url(' +options.thumb+ ') no-repeat'
+		});
 
 		var interval = setInterval(function () {
 
@@ -79,6 +88,7 @@
 
 			me.controlRectangle	= $('<div>')
 										.addClass('control-rectangle')
+										.mousedown( $.proxy(me.onRectangleMousedown, me) )
 										.appendTo( me.element );
 
 //			override tilezoom listener
@@ -117,14 +127,15 @@
 				containerHeight		= container.height(),
 				holder				= tilezoom.holder,
 				holderWidth			= holder.width(),
-				holderHeight		= holder.height();
+				holderHeight		= holder.height(),
+				duration			= me.options.duration;
 
 //			calculate width and height
 			var rectangleWidth	= (containerWidth / holderWidth) * 100,
 				rectangleHeight	= (containerHeight / holderHeight) * 100;
 
 			rectangleWidth	= parseInt( rectangleWidth * elementWidth / 100 ) - parseInt(controlRectangle.css('border-left-width'));
-			rectangleHeight	= parseInt( rectangleHeight * elementHeight / 100 ) - parseInt(controlRectangle.css('border-bottom-width'));
+			rectangleHeight	= parseInt( rectangleHeight * elementHeight / 100 ) - parseInt(controlRectangle.css('border-top-width')) - parseInt(controlRectangle.css('border-bottom-width'));
 
 //			calculate position
 			var rectangleLeft	= (x / holderWidth) * 100,
@@ -142,13 +153,23 @@
 				rectangleTop = elementHeight - rectangleHeight;
 			}
 
-			var style = {
+//			define slide animation
+			if ( duration && duration > 0 && me._isInitialized) {
 
-				left:	rectangleLeft + 'px',
-				top:	rectangleTop + 'px',
-				width:	rectangleWidth +'px',
-				height:	rectangleHeight +'px'
-			};
+				me._setAnimation(controlRectangle, duration);
+
+				if ( me.timer ) {
+
+					clearTimeout( me.timer );
+				}
+
+				me.timer = setTimeout(function () {
+
+					me._setAnimation(controlRectangle, false);
+
+				}, duration);
+			}
+			me._isInitialized = true;
 
 			controlRectangle.css({
 
@@ -157,8 +178,106 @@
 				width:	rectangleWidth +'px',
 				height:	rectangleHeight +'px'
 			});
+		},
 
-			console.log( style );
+		_setAnimation: function ( el, duration ) {
+
+			if ( duration ) {
+
+				el.css({
+
+					'transition':			'all ' +duration+ 'ms linear',
+					'-webkit-transition':	'all ' +duration+ 'ms linear'
+				});
+			}
+			else {
+
+				el.css({
+
+					'transition':			'',
+					'-webkit-transition':	''
+				});
+			}
+		},
+
+		onRectangleMousedown: function ( event ) {
+
+			var me				= this,
+				rectangle		= me.controlRectangle,
+				rectangleWidth	= rectangle.outerWidth(),
+				rectangleHeight	= rectangle.outerHeight(),
+				element			= me.element,
+				elementWidth	= element.width(),
+				elementHeight	= element.height(),
+				$document		= $(document);
+
+			rectangle.addClass('dragging');
+
+			me._setAnimation(rectangle, false);
+
+			var mouseMoveFunction = function (e) {
+
+				var offset	= element.offset(),
+					x		= e.pageX - offset.left - (rectangleWidth / 2),
+					y		= e.pageY - offset.top - (rectangleHeight / 2);
+
+				if ( x < 0 ) {
+
+					x = 0;
+				}
+				else if ( x + rectangleWidth > elementWidth ) {
+
+					x = elementWidth - rectangleWidth;
+				}
+
+				if ( y < 0 ) {
+
+					y = 0;
+				}
+				else if ( y + rectangleHeight > elementHeight ) {
+
+					y = elementHeight - rectangleHeight;
+				}
+
+				rectangle.css({
+
+					left:	x,
+					top:	y
+				});
+			};
+
+//			trigger mousemove event on start
+			mouseMoveFunction( event );
+
+//			add listeners
+			$document.unbind('mousemove').mousemove(mouseMoveFunction);
+			$document.one('mouseup', function () {
+
+				$document.unbind('mousemove');
+				rectangle.removeClass('dragging');
+
+				var dragstop = me.options.dragstop;
+				if ( dragstop ) {
+
+					var	tilezoom			= me.options.tilezoom,
+						element				= me.element,
+						elementWidth		= element.width(),
+						elementHeight		= element.height(),
+						holder				= tilezoom.holder,
+						container			= tilezoom.cont,
+						holderWidth			= holder.width(),
+						holderHeight		= holder.height();
+
+					var percentX	= holderWidth / elementWidth,
+						percentY	= holderHeight / elementHeight,
+						x			= ( parseInt(rectangle.css('left')) + (rectangle.outerWidth() / 2) ) * percentX,
+						y			= ( parseInt(rectangle.css('top')) + (rectangle.outerHeight() / 2) ) * percentY;
+
+					dragstop( parseInt(x), parseInt(y), tilezoom.level );
+
+					container.tilezoom('moveTo', tilezoom.level, { x: parseInt(x), y: parseInt(y) } );
+				}
+			});
 		}
 	};
 

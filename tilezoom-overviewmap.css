@@ -2,17 +2,27 @@
 
 	position:relative;
 
-	width:920px;
-	height:130px;
-	background:url("dest/wow_files/thumb.jpg");
+	margin-top:20px;
+	width:650px;
+	height:92px;
 	border:solid 1px black;
+
+	-webkit-touch-callout:none;
+	-webkit-user-select:none;
+	-khtml-user-select:none;
+	-moz-user-select:none;
+	-ms-user-select:none;
+	user-select:none;
 }
 
 .tilezoom-overviewmap .control-rectangle {
 
 	position:absolute;
 	border:solid 2px red;
+}
 
-	transition:all .3s linear;
-	-webkit-transition:all .3s linear;
+.tilezoom-overviewmap .control-rectangle.dragging, .tilezoom-overviewmap .control-rectangle:HOVER {
+
+	cursor:move;
+	background:rgba(0, 0, 0, 0.2);
 }
