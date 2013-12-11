@@ -34,6 +34,7 @@ var methods = {
 			thumb:			'thumb.jpg', // thumbnail filename
 			format:			'jpg', // image format
 			speed:			500, //animation speed (ms)
+			startPosition:	'center',
 			mousewheel:		false, // requires mousewheel event plugin: http://plugins.jquery.com/project/mousewheel
 			gestures:		false, // requires touchit event plugin, https://github.com/danielglyde/TouchIt
 			zoomToCursor:	true, // stay the same relative distance from the edge when zooming
@@ -85,45 +86,53 @@ var methods = {
 			$cont.removeData('tilezoom').html('');
 		});
 	},
-	center: function() {
+	center: function () {
 
 		return this.each(function () {
 
-			var $cont		= $(this);
-			var settings	= $cont.data('tilezoom.settings');
-			var $holder		= settings.holder;
-			var $hotspots	= settings.hotspots;
-			var level		= 12;
-
-			var left = "50%",
-				top  = "50%";
-
-			if ( left.indexOf('%') !== -1 ) {
-
-				left = parseInt(parseFloat(left) * $holder.width() / 100);
-			}
-			if ( top.indexOf('%') !== -1 ) {
-
-				top = parseInt(parseFloat(top) * $holder.height() / 100);
-			}
+			var $cont		= $(this),
+				settings	= $cont.data('tilezoom.settings'),
+				$holder		= settings.holder,
+				$hotspots	= settings.hotspots,
+				level		= 12;
 
 			var coords = {
 
-				left:	left,
-				top:	top
+				left:	parseInt($holder.width() / 2),
+				top:	parseInt($holder.height() / 2)
 			};
 
-			console.log( coords );
-			$cont.tilezoom('zoom', level, coords);
+			$cont.tilezoom('zoom', level, coords, 0);
 		});
 	},
-	zoom: function ( level, coords ) {
+	moveTo: function ( level, coords ) {
+
+		return this.each(function () {
+
+			var $cont		= $(this),
+				settings	= $cont.data('tilezoom.settings');
+
+			var moveTo = {
+
+				left:	coords.left ? coords.left : coords.x,
+				top:	coords.top ? coords.top : coords.y
+			};
+
+			$cont.tilezoom('zoom', level, moveTo);
+		});
+	},
+	zoom: function ( level, coords, speed ) {
 
 		return this.each(function () {
 
 			var $cont		= $(this),
 				settings	= $cont.data('tilezoom.settings'),
 				$holder		= settings.holder;
+
+			if ( typeof speed === "undefined" ) {
+
+				speed = settings.speed;
+			}
 
 			if ( settings.inAction ) {
 
@@ -136,7 +145,7 @@ var methods = {
 				if ( typeof settings.beforeZoom == "function" ) {
 
 					var res = settings.beforeZoom($cont, settings.level, level);
-					if( res === false ){
+					if ( res === false ) {
 
 						return;
 					}
@@ -147,7 +156,7 @@ var methods = {
 
 				initTiles($cont);
 
-				setSizePosition($cont, coords, settings.speed, function() {
+				setSizePosition($cont, coords, speed, function() {
 
 					checkTiles($cont);
 
@@ -159,8 +168,6 @@ var methods = {
 							x:	( parseInt($holder.css('left')) * -1),
 							y:	( parseInt($holder.css('top')) * -1)
 						};
-
-						console.log( retCoords );
 
 						settings.afterZoom( $cont, retCoords, level );
 					}
@@ -234,7 +241,10 @@ function initTilezoom (defaults, options, $cont, index) {
 	initHotspots($cont);
 	initNavigation($cont);
 
-	setSizePosition($cont, coords={}, 0, function() {
+//	Startposition
+	var coords = {};
+
+	setSizePosition($cont, {}, 0, function() {
 
 		checkTiles($cont);
 		var isTouchSupported = (typeof(window.ontouchstart) != 'undefined');
@@ -246,12 +256,26 @@ function initTilezoom (defaults, options, $cont, index) {
 
 			initDraggable($cont);
 			initMousewheel($cont);
-		}	
+		}
+
+		if ( settings.startPosition == 'center' ) {
+
+			coords = {
+
+				left:	parseInt( settings.holder.width() / 2 ),
+				top:	parseInt( settings.holder.height() / 2 )
+			};
+		}
+		setTimeout(function () {
+
+			$cont.tilezoom('zoom', settings.level, coords, 0);
+
+		}, 0);
 	});
 }
 
 //parse XML
-function initOptionsFromXml(xml, options, callback) {
+function initOptionsFromXml (xml, options, callback) {
 
 	$.ajax({
 
@@ -281,7 +305,7 @@ function initOptionsFromXml(xml, options, callback) {
 }
 
 //build markup
-function buildMarkup($cont, settings) {
+function buildMarkup ($cont, settings) {
 	
 	$cont.addClass('zoom-container');
 
@@ -342,7 +366,7 @@ function initNumLevels (settings) {
 	return numLevels;
 };
 
-function initLevel(settings) {
+function initLevel (settings) {
 
 	var level		= 9,
 		$cont		= settings.cont,
@@ -364,7 +388,7 @@ function initLevel(settings) {
 function initTiles ($cont, level) {
 
 	var settings = $cont.data('tilezoom.settings');
-	if (level == undefined) {
+	if ( level == undefined ) {
 
 		level = settings.level;
 	}
@@ -435,10 +459,10 @@ function getScale (level, settings) {
 
 function getTiles (level, settings) {
 
-	var cells = getNumTiles(level, settings);
-	var yield = [];
+	var cells = getNumTiles(level, settings),
+		yield = [];
 
-	for ( row=0; row <= (cells.rows-1); row++) {
+	for ( row = 0; row <= (cells.rows-1); row++) {
 
 		for ( column=0; column <= (cells.columns-1); column++) {
 
@@ -448,18 +472,18 @@ function getTiles (level, settings) {
 	return yield;
 }
 
-function getNumTiles(level, settings) {
+function getNumTiles (level, settings) {
 
-	if (0 <= level && level < settings.numLevels) {
+	if ( 0 <= level && level < settings.numLevels ) {
 
-		var dimension = getDimension(level, settings);
-		var cells = {
+		var dimension	= getDimension(level, settings),
+			tileSize	= settings.tileSize;
 
-			columns:	parseInt(Math.ceil(parseFloat(dimension.width) / settings.tileSize)),
-		  	rows:		parseInt(Math.ceil(parseFloat(dimension.height) / settings.tileSize))
+		return {
+
+			columns:	parseInt(Math.ceil(parseFloat(dimension.width) / tileSize)),
+		  	rows:		parseInt(Math.ceil(parseFloat(dimension.height) / tileSize))
 		};
-
-		return cells;
 	}
 	else {
 
@@ -467,28 +491,28 @@ function getNumTiles(level, settings) {
 	}
 }
 
-function checkTiles($cont) {
+function checkTiles ($cont) {
 
-	var settings = $cont.data('tilezoom.settings');
-	var visibleTiles = getVisibleTiles($cont);
+	var settings		= $cont.data('tilezoom.settings'),
+		visibleTiles	= getVisibleTiles($cont);
 
-	$.each(visibleTiles, function(index, visibleTile) {
+	$.each(visibleTiles, function (index, visibleTile) {
 
-		var id = 'zoom-'+settings.id+'-tile-'+visibleTile[0]+'-'+visibleTile[1];
-		var $img = $('#'+id);
+		var id		= 'zoom-' +settings.id+ '-tile-' +visibleTile[0]+ '-' +visibleTile[1],
+			$img	= $('#'+id);
 
 		if ( $img.get(0) ) {
 
 			var src = $img.attr('src');
-			if(!src) {
-				var _src = $img.attr('_src');
-				$img.attr('src', _src);
+			if( !src ) {
+
+				$img.attr('src', $img.attr('_src'));
 			}
 		}
 	});
 }
 
-function getVisibleTiles($cont) {
+function getVisibleTiles ($cont) {
 
 	var settings	= $cont.data('tilezoom.settings'),
 		$holder		= settings.holder,
@@ -525,21 +549,18 @@ function getVisibleTiles($cont) {
 /*
 * Init Draggable funtionality
 */
-
-function initDraggable($cont) {
+function initDraggable ($cont) {
 	
-	var settings = $cont.data('tilezoom.settings');
-	var $holder = settings.holder;
-	var $hotspots = settings.hotspots;
-	
-	var dragging = false;
+	var settings	= $cont.data('tilezoom.settings'),
+		$holder		= settings.holder,
+		$hotspots	= settings.hotspots;
 
-	var startLeft	= 0,
+	var dragging	= false,
+		startLeft	= 0,
 		startTop	= 0;
-	
+
 	$holder.unbind('mousedown').unbind('mousemove');
-	
-	$holder.dblclick(function(e) {
+	$holder.dblclick(function (e) {
 
 		var coords = {
 
@@ -853,103 +874,125 @@ function initGestures ($cont) {
 */
 function initNavigation($cont) {
 
-	var settings = $cont.data('tilezoom.settings');
-	
-	if(settings.navigation==true) {
-		if(!$cont.children('div.zoom-navigation').get(0)) {
-			$cont.append('<div class="zoom-navigation"></div>');
+	var settings	= $cont.data('tilezoom.settings'),
+		$document	= $(document),
+		$nav		= false;
+
+	if (settings.navigation == true ) {
+
+		if (!$cont.children('div.zoom-navigation').get(0)) {
+
+			$cont.append('<div class="zoom-navigation">');
 		}
 		//navigation
-		var $nav = settings.nav = $cont.children('div.zoom-navigation');
+		$nav = settings.nav = $cont.children('div.zoom-navigation');
 	}
 	else if(settings.navigation != false && settings.navigation != null) {
-		var $nav = settings.nav = $(settings.navigation);
+
+		$nav = settings.nav = $(settings.navigation);
 	}
-	
-	if($nav && $nav.get(0)) {
+
+	if ($nav && $nav.get(0)) {
+
 		//zoomIn button
-		if(!$nav.children('a.zoom-in').get(0)) {
+		if( !$nav.children('a.zoom-in').get(0) ) {
+
 			$nav.append('<a class="zoom-in" href="#" title="Zoom in">Zoom In</a>');
 		}
 		settings.zoomIn = $nav.children('a.zoom-in');
 		
 		//zoomOut button
-		if(!$nav.children('a.zoom-out').get(0)) {
+		if( !$nav.children('a.zoom-out').get(0) ) {
+
 			$nav.append('<a class="zoom-out" href="#" title="Zoom Out">Zoom Out</a>');
 		}
 		settings.zoomOut = $nav.children('a.zoom-out');
 		
 		//goHome button
-		if(!$nav.children('a.go-home').get(0)) {
+		if (!$nav.children('a.go-home').get(0)) {
+
 			$nav.append('<a class="go-home" href="#" title="Go Home">Go Home</a>');
 		}
 		settings.goHome = $nav.children('a.go-home');
 		
 		//toggleFull button
 		if(!$nav.children('a.toggle-full').get(0)) {
+
 			$nav.append('<a class="toggle-full" href="#" title="Toggle Full Page">Toggle Full Page</a>');
 		}
 		settings.toggleFull = $nav.children('a.toggle-full');
 	}
 	
 	//init zoomIn button
-	$(settings.zoomIn).unbind('click');
-	$(settings.zoomIn).click(function() {
-		var settings = $cont.data('tilezoom.settings');
-		var level = settings.level+1;
+	$(settings.zoomIn).unbind('click').click(function() {
+
+		var settings	= $cont.data('tilezoom.settings'),
+			level		= settings.level+1;
+
 		$cont.tilezoom('zoom', level, {});
 		return false;
 	});
 	
 	//init zoomOut button
-	$(settings.zoomOut).unbind('click');
-	$(settings.zoomOut).click(function() {
-		var settings = $cont.data('tilezoom.settings');
-		var level = settings.level-1;
+	$(settings.zoomOut).unbind('click').click(function() {
+
+		var settings	= $cont.data('tilezoom.settings'),
+			level		= settings.level-1;
+
 		$cont.tilezoom('zoom', level, {});
 		return false;
 	});
 	
 	//init goHome button
-	$(settings.goHome).unbind('click');
-	$(settings.goHome).click(function() {
+	$(settings.goHome).unbind('click').click(function() {
 
-		var settings = $cont.data('tilezoom.settings');
-		var $hotspots = settings.hotspots;
+		var settings	= $cont.data('tilezoom.settings'),
+			$hotspots	= settings.hotspots,
+			level		= settings.startLevel;
+
 		$hotspots.children().removeClass('active');
 
-		var level = settings.startLevel;
 		$cont.tilezoom('zoom', level, {});
 
 		return false;
 	});
 	
 	//init toggleFull button
-	$(settings.toggleFull).unbind('click');
-	$(settings.toggleFull).click(function() {
-		var onFullScreen = function(e){
+	$(settings.toggleFull).unbind('click').click(function() {
+
+		var onFullScreen = function (e) {
+
 			if (e.keyCode == 27) { // esc
+
 				$(settings.toggleFull).click(); 
 			}
 		}
-		if(settings.userAgent.indexOf("android") > -1) {
+
+		if (settings.userAgent.indexOf("android") > -1) {
+
 			var positionStyle = 'absolute';
 		}
 		else {
+			
 			var positionStyle = 'fixed';
 		}
+
 		if ($(this).hasClass('toggle-full-close')){
+
 			$cont.css('position', 'relative');
 			$(this).removeClass('toggle-full-close');
-			$(document).unbind("keyup", onFullScreen);
-		} else {
+			$document.unbind("keyup", onFullScreen);
+		}
+		else {
+
 			$cont.css('position', positionStyle);
 			$(this).addClass('toggle-full-close');
-			$(document).keyup(onFullScreen);
+			$document.keyup(onFullScreen);
 		}
+
 		$cont.toggleClass('zoom-full');
-		coords = {};
-		setSizePosition($cont, coords, 0);
+
+		setSizePosition($cont, {}, 0);
 		return false;
 	});
 }
@@ -957,21 +1000,21 @@ function initNavigation($cont) {
 /*
 *	Main size and position handler
 */
-function setSizePosition ($cont, coords ,speed, callback) {
+function setSizePosition ($cont, coords, speed, callback) {
 
 	var settings = $cont.data('tilezoom.settings');
 	settings.inAction = true;
 
 	$cont.data('tilezoom.settings', settings);
-	
-	var $holder		= settings.holder;
-	var $thumb		= settings.thumb;
-	var $tiles		= settings.tiles;
-	var $hotspots	= settings.hotspots;
-	
+
+	var $holder		= settings.holder,
+		$thumb		= settings.thumb,
+		$tiles		= settings.tiles,
+		$hotspots	= settings.hotspots;
+
 	//size
 	var levelImage = getImage(settings.level, settings);
-	
+
 	//position
 	var ratio	= parseFloat(levelImage.width / $holder.width());
 
@@ -986,13 +1029,13 @@ function setSizePosition ($cont, coords ,speed, callback) {
 		pos.left = parseInt($cont.width() / 2) - left;
 	}
 	//relative center to the event coords ( mousewheel zoom )
-	else if (coords.x ) {
+	else if ( coords.x ) {
 
-		var positionLeft	= coords.x - $holder.offset().left;
-		var relativeLeft	= coords.x - $cont.offset().left;
-		var percentLeft		= positionLeft / $holder.width();
+		var positionLeft	= coords.x - $holder.offset().left,
+			relativeLeft	= coords.x - $cont.offset().left,
+			percentLeft		= positionLeft / $holder.width();
 
-		pos.left = parseInt(relativeLeft-levelImage.width * percentLeft);
+		pos.left = parseInt(relativeLeft - levelImage.width * percentLeft);
 	}
 	//move center to current center ( + - zoom )
 	else {
@@ -1002,7 +1045,7 @@ function setSizePosition ($cont, coords ,speed, callback) {
 	}
 	
 	//move center to coord ( hotspot click )
-	if (coords.top) {
+	if ( coords.top ) {
 
 		var top = levelImage.height / $holder.height() * parseFloat(coords.top);
 		pos.top = parseInt($cont.height() / 2) - top;
@@ -1010,9 +1053,10 @@ function setSizePosition ($cont, coords ,speed, callback) {
 	//relative center to the event coords ( mousewheel zoom )
 	else if (coords.y) {
 
-		var positionTop = coords.y - $holder.offset().top;
-		var relativeTop = coords.y - $cont.offset().top;
-		var percentTop = positionTop / $holder.height();
+		var positionTop	= coords.y - $holder.offset().top,
+			relativeTop	= coords.y - $cont.offset().top,
+			percentTop	= positionTop / $holder.height();
+
 		pos.top = parseInt(relativeTop-levelImage.height * percentTop);
 	}
 	//move center to current center ( + - zoom )
@@ -1092,22 +1136,24 @@ function checkBoundaries ($cont, pos) {
 
 	//log("boundaryOffset ["+boundaryOffset.x+", "+boundaryOffset.y+"]");
 	//boundaries
-	var minLeft	= contWidth-levelImage.width-boundaryOffset.x;
-	var minTop	= contHeight-levelImage.height-boundaryOffset.y;
+	var minLeft	= contWidth-levelImage.width-boundaryOffset.x,
+		minTop	= contHeight-levelImage.height-boundaryOffset.y;
 
-	if (pos.left<minLeft) pos.left = minLeft;
-	if (pos.top<minTop) pos.top = minTop;
+	if (pos.left < minLeft) pos.left = minLeft;
+	if (pos.top < minTop) pos.top = minTop;
 
-	if (pos.left>=boundaryOffset.x) pos.left = boundaryOffset.x;
-	if (pos.top>=boundaryOffset.y) pos.top = boundaryOffset.y;
+	if (pos.left >= boundaryOffset.x) pos.left = boundaryOffset.x;
+	if (pos.top >= boundaryOffset.y) pos.top = boundaryOffset.y;
 
-	if (levelImage.width<=contWidth) {
+	if (levelImage.width <= contWidth) {
+
 		//move to center of container
 		pos.left = parseInt((contWidth-levelImage.width)/2);
 	}
 
-	if (levelImage.height<=contHeight) {
-		//move to center of container
+	if (levelImage.height <= contHeight) {
+
+//		move to center of container
 		pos.top = parseInt((contHeight-levelImage.height)/2);
 	}
 
