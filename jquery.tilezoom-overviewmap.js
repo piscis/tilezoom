@@ -41,7 +41,7 @@
 		tilezoom:	null,
 		thumb:		'',
 
-		duration:	500,
+		duration:	300,
 		draggable:	true,
 		clickable:	true,
 
@@ -194,22 +194,19 @@
 
 		_setAnimation: function ( el, duration ) {
 
+			var value = '';
 			if ( duration ) {
 
-				el.css({
-
-					'transition':			'all ' +duration+ 'ms linear',
-					'-webkit-transition':	'all ' +duration+ 'ms linear'
-				});
+				value = 'all ' +duration+ 'ms linear';
 			}
-			else {
 
-				el.css({
+			el.css({
 
-					'transition':			'',
-					'-webkit-transition':	''
-				});
-			}
+				'transition':			value,
+				'-webkit-transition':	value,
+				'-moz-transition':		value,
+				'-o-transition':		value
+			});
 		},
 
 		onRectangleMousedown: function ( event ) {

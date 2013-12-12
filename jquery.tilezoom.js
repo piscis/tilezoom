@@ -521,8 +521,8 @@ function getVisibleTiles ($cont) {
 	var mapX	= parseInt($holder.css('left')),
 		mapY	= parseInt($holder.css('top'));
 
-	var viewportWidth = $cont.width(),
-		viewportHeight = $cont.height();
+	var viewportWidth	= $cont.width(),
+		viewportHeight	= $cont.height();
 
 	var startX = Math.abs(Math.floor(mapX / tileSize)) - 2,
 		startY = Math.abs(Math.floor(mapY / tileSize)) -1; 
@@ -753,9 +753,9 @@ function initHotspots($cont) {
 
 function initGestures ($cont) {
 	
-	var settings = $cont.data('tilezoom.settings');
-	var $holder = settings.holder;
-	var $nav = settings.nav;
+	var settings	= $cont.data('tilezoom.settings'),
+		$holder		= settings.holder,
+		$nav		= settings.nav;
 	
 	if (settings.gestures && typeof $.fn.touchit != "undefined") {
 
