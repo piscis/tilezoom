@@ -43,8 +43,10 @@
 
 		duration:	500,
 		draggable:	true,
+		clickable:	true,
 
-		dragstop:	function ( x, y, zoomLevel ) { }
+		dragstop:	function ( x, y, zoomLevel ) { },
+		click:		function ( x, y, zoomLevel ) { }
 	};
 	$.fn.tilezoomOverviewMap.version = '1.0';
 
@@ -82,14 +84,24 @@
 
 			var me			= this
 				options		= me.options;
+				element		= me.element,
 				tilezoom	= options.tilezoom;
 
-			me.element.addClass( 'tilezoom-overviewmap' );
+			element.addClass( 'tilezoom-overviewmap' );
+
+			if ( options.clickable ) {
+
+				element.click( $.proxy(me.onClick, me) );
+			}
 
 			me.controlRectangle	= $('<div>')
 										.addClass('control-rectangle')
-										.mousedown( $.proxy(me.onRectangleMousedown, me) )
 										.appendTo( me.element );
+
+			if ( options.draggable ) {
+
+				me.controlRectangle.mousedown( $.proxy(me.onRectangleMousedown, me) );
+			}
 
 //			override tilezoom listener
 			var superAfterZoom = tilezoom.afterZoom;
@@ -270,14 +282,46 @@
 
 					var percentX	= holderWidth / elementWidth,
 						percentY	= holderHeight / elementHeight,
-						x			= ( parseInt(rectangle.css('left')) + (rectangle.outerWidth() / 2) ) * percentX,
-						y			= ( parseInt(rectangle.css('top')) + (rectangle.outerHeight() / 2) ) * percentY;
+						x			= parseInt( ( parseInt(rectangle.css('left')) + (rectangle.outerWidth() / 2) ) * percentX),
+						y			= parseInt( ( parseInt(rectangle.css('top')) + (rectangle.outerHeight() / 2) ) * percentY);
 
-					dragstop( parseInt(x), parseInt(y), tilezoom.level );
+					dragstop( x, y, tilezoom.level );
 
-					container.tilezoom('moveTo', tilezoom.level, { x: parseInt(x), y: parseInt(y) } );
+					container.tilezoom('moveTo', tilezoom.level, { x: x, y: y } );
 				}
 			});
+		},
+
+		onClick: function ( e ) {
+
+			if ( $(e.target).hasClass('tilezoom-overviewmap') ) {
+
+				var	me				= this,
+					tilezoom		= me.options.tilezoom,
+					rectangle		= me.controlRectangle,
+					rectangleWidth	= rectangle.outerWidth(),
+					rectangleHeight	= rectangle.outerHeight(),
+					container		= tilezoom.cont,
+					element			= me.element,
+					elementWidth	= element.width(),
+					elementHeight	= element.height(),
+					holder			= tilezoom.holder,
+					holderWidth		= holder.width(),
+					holderHeight	= holder.height();
+
+				var percentX	= holderWidth / elementWidth,
+					percentY	= holderHeight / elementHeight,
+					x			= parseInt( e.offsetX * percentX),
+					y			= parseInt( e.offsetY * percentY);
+
+				var clickFn = me.options.click;
+				if ( clickFn ) {
+
+					clickFn( x, y, tilezoom.level )
+				}
+
+				container.tilezoom('moveTo', tilezoom.level, { x: x, y: y } );
+			}
 		}
 	};
 
