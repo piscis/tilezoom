@@ -85,7 +85,8 @@
 			var me			= this
 				options		= me.options;
 				element		= me.element,
-				tilezoom	= options.tilezoom;
+				tilezoom	= options.tilezoom,
+				holder		= tilezoom.holder;
 
 			element.addClass( 'tilezoom-overviewmap' );
 
@@ -125,6 +126,12 @@
 
 				me.doLayout(tilezoom, coords.endX, coords.endY, zoomLevel);
 			};
+
+//			Init
+			var x = parseInt( holder.css('left') ) * -1,
+				y = parseInt( holder.css('top') ) * -1;
+
+			me.doLayout(tilezoom, x, y, tilezoom.level);
 		},
 
 		doLayout: function ( tilezoom, x, y, zoomLevel ) {

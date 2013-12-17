@@ -53,7 +53,7 @@ var methods = {
 		}
 
 		// iterate the matched nodeset
-		return this.each(function(index){
+		return this.each(function (index) {
 
 			if ( options.xml != null ) {
 
@@ -65,7 +65,7 @@ var methods = {
 			}
 			else {
 
-				initTilezoom(defaults, options, $(this), index);	
+				initTilezoom(defaults, options, $(this), index);
 			}		
 		});
 	},
@@ -665,24 +665,34 @@ function initDraggable ($cont) {
 */
 function initMousewheel ($cont) {
 
-	var settings = $cont.data('tilezoom.settings');
-	var $holder = settings.holder;
+	var settings	= $cont.data('tilezoom.settings'),
+		$holder		= settings.holder;
 	
-	if(settings.mousewheel && typeof $.fn.mousewheel != "undefined") {
+	if ( settings.mousewheel && typeof $.fn.mousewheel != "undefined" ) {
 
-		$cont.unbind('mousewheel').mousewheel(function(e, delta) {
+		var	timer = false;
 
-			var coords = {};
-			if (settings.zoomToCursor ) {
+		$cont.mousewheel(function (e, delta) {
 
-				coords.x = e.pageX;
-				coords.y = e.pageY;
+			if ( timer ) {
+
+				return false;
 			}
+			timer = setTimeout(function () {
 
-			var level = Math.round(settings.level + delta);
+				timer = false;
+			}, 2000);
+
+			var coords = {
+
+				x: e.pageX,
+				y: e.pageY
+			};
+
+			var level = (delta < 0 ? settings.level -1 : settings.level + 1);
 			$cont.tilezoom('zoom', level, coords);
 
-			return false;//don't scroll the window
+			return false; //don't scroll the window
 		});
 	}
 }
@@ -872,7 +882,7 @@ function initGestures ($cont) {
 /*
 * Init Navigation
 */
-function initNavigation($cont) {
+function initNavigation ($cont) {
 
 	var settings	= $cont.data('tilezoom.settings'),
 		$document	= $(document),
@@ -897,28 +907,28 @@ function initNavigation($cont) {
 		//zoomIn button
 		if( !$nav.children('a.zoom-in').get(0) ) {
 
-			$nav.append('<a class="zoom-in" href="#" title="Zoom in">Zoom In</a>');
+			$nav.append('<a class="zoom-in" href="#" title="Zoom in">');
 		}
 		settings.zoomIn = $nav.children('a.zoom-in');
 		
 		//zoomOut button
 		if( !$nav.children('a.zoom-out').get(0) ) {
 
-			$nav.append('<a class="zoom-out" href="#" title="Zoom Out">Zoom Out</a>');
+			$nav.append('<a class="zoom-out" href="#" title="Zoom Out">');
 		}
 		settings.zoomOut = $nav.children('a.zoom-out');
 		
 		//goHome button
 		if (!$nav.children('a.go-home').get(0)) {
 
-			$nav.append('<a class="go-home" href="#" title="Go Home">Go Home</a>');
+			$nav.append('<a class="go-home" href="#" title="Go Home">');
 		}
 		settings.goHome = $nav.children('a.go-home');
 		
 		//toggleFull button
 		if(!$nav.children('a.toggle-full').get(0)) {
 
-			$nav.append('<a class="toggle-full" href="#" title="Toggle Full Page">Toggle Full Page</a>');
+			$nav.append('<a class="toggle-full" href="#" title="Toggle Full Page">');
 		}
 		settings.toggleFull = $nav.children('a.toggle-full');
 	}

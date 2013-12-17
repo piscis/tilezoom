@@ -1,6 +1,7 @@
 div.zoom-container {
 	position: relative;
 	overflow: hidden;
+	z-index:10;
 }
 .zoom-container.zoom-full {
 	left: 0 !important;
