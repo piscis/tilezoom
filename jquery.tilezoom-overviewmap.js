@@ -131,7 +131,7 @@
 			var x = parseInt( holder.css('left') ) * -1,
 				y = parseInt( holder.css('top') ) * -1;
 
-			me.doLayout(tilezoom, x, y, tilezoom.level);
+			me.doLayout(tilezoom, x, y, tilezoom.zoomLevel);
 		},
 
 		doLayout: function ( tilezoom, x, y, zoomLevel ) {

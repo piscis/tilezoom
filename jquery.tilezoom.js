@@ -25,31 +25,32 @@ var methods = {
 
 		var defaults = {
 
-			width:			null, // original image width in pixels. *(required) if no xml file
-			height:			null, // original image height in pixels *(required) if no xml file
-			path:			null, // tiles directory. *(required) if no xml file
-			xml:			null, // xml file with settings generated with Deep Zoom Tools
-			tileSize:		254, // tile size in pixels
-			overlap:		1, // tiles overlap
-			thumb:			'thumb.jpg', // thumbnail filename
-			format:			'jpg', // image format
-			speed:			500, //animation speed (ms)
-			startPosition:	'center',
-			mousewheel:		false, // requires mousewheel event plugin: http://plugins.jquery.com/project/mousewheel
-			gestures:		false, // requires touchit event plugin, https://github.com/danielglyde/TouchIt
-			zoomToCursor:	true, // stay the same relative distance from the edge when zooming
-			offset:			'20%', //boundaries offset (px or %). If 0 image move side to side and up to down
-			dragBoundaries:	true, // If we should constrain the drag to the boundaries
-			beforeZoom:		function ($cont, oldLevel, newLevel) {}, // callback before a zoom happens
-            afterZoom:		function ($cont, coords, level) { }, // callback after zoom has completed
-			callBefore:		function ($cont) {}, // this callback happens before dragging starts
-            callAfter:		function ($cont, coords, level) { }, // this callback happens at end of drag after released "mouseup"
-			navigation:		true, // navigation container ([true], [false], [DOM selector])
-			zoomIn:			null, // zoomIn button
-			zoomOut:		null, // zoomOut button
-			goHome:			null, // goHome button, reset to default state
-			toggleFull:		null, // toggleFull button
-			minLevel:		9
+			width:				null, // original image width in pixels. *(required) if no xml file
+			height:				null, // original image height in pixels *(required) if no xml file
+			path:				null, // tiles directory. *(required) if no xml file
+			xml:				null, // xml file with settings generated with Deep Zoom Tools
+			tileSize:			254, // tile size in pixels
+			overlap:			1, // tiles overlap
+			directionArrows:	true,
+			thumb:				'thumb.jpg', // thumbnail filename
+			format:				'jpg', // image format
+			speed:				500, //animation speed (ms)
+			startPosition:		'center',
+			mousewheel:			false, // requires mousewheel event plugin: http://plugins.jquery.com/project/mousewheel
+			gestures:			false, // requires touchit event plugin, https://github.com/danielglyde/TouchIt
+			zoomToCursor:		true, // stay the same relative distance from the edge when zooming
+			offset:				'20%', //boundaries offset (px or %). If 0 image move side to side and up to down
+			dragBoundaries:		true, // If we should constrain the drag to the boundaries
+			beforeZoom:			function ($cont, oldLevel, newLevel) { }, // callback before a zoom happens
+            afterZoom:			function ($cont, coords, level) { }, // callback after zoom has completed
+			callBefore:			function ($cont) {}, // this callback happens before dragging starts
+            callAfter:			function ($cont, coords, level) { }, // this callback happens at end of drag after released "mouseup"
+			navigation:			true, // navigation container ([true], [false], [DOM selector])
+			zoomIn:				null, // zoomIn button
+			zoomOut:			null, // zoomOut button
+			goHome:				null, // goHome button, reset to default state
+			toggleFull:			null, // toggleFull button
+			minLevel:			9
 		}
 
 		// iterate the matched nodeset
@@ -171,6 +172,8 @@ var methods = {
 
 						settings.afterZoom( $cont, retCoords, level );
 					}
+
+					updateDirectionArrows(settings);
 				});
 			}
 			else {
@@ -211,7 +214,7 @@ $.fn.tilezoom = function ( method ) {
 //init Tilezoom
 function initTilezoom (defaults, options, $cont, index) {
 
-	var settings = $.extend({}, defaults, options);
+	var settings = $.extend({ }, defaults, options);
 
 	if ( settings.width == null ) {
 
@@ -226,23 +229,39 @@ function initTilezoom (defaults, options, $cont, index) {
 		$.error( 'path to tiles directory is not specified' );
 	}
 
-	settings.userAgent = navigator.userAgent.toLowerCase();
-	//save zoom element index
-	settings.id = index;
-	//set in action flag
-	settings.inAction = false;
-	//container
-	settings.cont = $cont;	
+	settings.userAgent	= navigator.userAgent.toLowerCase();
+	settings.id			= index;
+	settings.inAction	= false;
+	settings.cont		= $cont;	
 
 	buildMarkup($cont, settings);
 	buildOptions($cont, settings);
 
+	if ( settings.directionArrows ) {
+
+		settings.directionArrows = {
+
+			top:	$('<div>', { 'class': 'zoom-arrow top' }).append( $('<span>') ),
+			right:	$('<div>', { 'class': 'zoom-arrow right' }).append( $('<span>') ),
+			bottom:	$('<div>', { 'class': 'zoom-arrow bottom' }).append( $('<span>') ),
+			left:	$('<div>', { 'class': 'zoom-arrow left' }).append( $('<span>') )
+		};
+
+		var arrows = settings.directionArrows;
+		for ( var key in arrows ) {
+
+			arrows[key].appendTo( $cont );
+		}
+	}
+
 	initTiles($cont);
 	initHotspots($cont);
 	initNavigation($cont);
+	updateDirectionArrows(settings);
 
 //	Startposition
-	var coords = {};
+	var coords = {},
+		holder = settings.holder;
 
 	setSizePosition($cont, {}, 0, function() {
 
@@ -262,8 +281,8 @@ function initTilezoom (defaults, options, $cont, index) {
 
 			coords = {
 
-				left:	parseInt( settings.holder.width() / 2 ),
-				top:	parseInt( settings.holder.height() / 2 )
+				left:	parseInt( holder.width() / 2 ),
+				top:	parseInt( holder.height() / 2 )
 			};
 		}
 		setTimeout(function () {
@@ -283,7 +302,7 @@ function initOptionsFromXml (xml, options, callback) {
 		url:		xml,
 		dataType:	"xml",
 
-		success: function(data) {
+		success: function (data) {
 
 			var $image = $(data).find('Image');
 
@@ -321,7 +340,7 @@ function buildMarkup ($cont, settings) {
 	var thumbPath = settings.path+'/'+settings.thumb;
 	if ( !$holder.children('img.zoom-thumb').get(0) ) {
 
-		$holder.prepend('<img src="'+thumbPath+'" class="zoom-thumb" />');
+		$holder.prepend('<img src="'+thumbPath+'" class="zoom-thumb"/>');
 	}
 	var $thumb = settings.thumb = $holder.children('img.zoom-thumb');
 
@@ -430,8 +449,8 @@ function getDimension (level, settings) {
 
 	if ( 0 <= level && level < settings.numLevels ) {
 
-		var scale = getScale(level, settings);
-		var dimension = {
+		var scale		= getScale(level, settings),
+			dimension	= {
 
 			width:	parseInt(Math.ceil( settings.width * scale )),
 			height:	parseInt(Math.ceil( settings.height * scale ))
@@ -466,7 +485,7 @@ function getTiles (level, settings) {
 
 		for ( column=0; column <= (cells.columns-1); column++) {
 
-			yield.push(new Array(column,row));
+			yield.push(new Array(column, row));
 		}
 	}
 	return yield;
@@ -551,9 +570,10 @@ function getVisibleTiles ($cont) {
 */
 function initDraggable ($cont) {
 	
-	var settings	= $cont.data('tilezoom.settings'),
-		$holder		= settings.holder,
-		$hotspots	= settings.hotspots;
+	var settings		= $cont.data('tilezoom.settings'),
+		directionArrows = settings.directionArrows,
+		$holder			= settings.holder,
+		$hotspots		= settings.hotspots;
 
 	var dragging	= false,
 		startLeft	= 0,
@@ -582,6 +602,8 @@ function initDraggable ($cont) {
 			return false;
 		}
 
+		var directionArrows = settings.directionArrows;
+
 		$holder.stop(true, true);
 
 		$hotspots.removeClass('grab').addClass('grabbing');
@@ -603,9 +625,17 @@ function initDraggable ($cont) {
 			settings.callBefore($cont);
         }
 
-		$document.unbind("mousemove").mousemove(function(e) {
+		$document.unbind("mousemove").mousemove(function (e) {
 
 			if ( dragging ) {
+
+				if ( directionArrows ) {
+
+					for ( var key in directionArrows ) {
+
+						directionArrows[key].addClass('dragging');
+					}
+				}
 
 				var offsetX =  e.pageX - startX,
 					offsetY =  e.pageY - startY;
@@ -623,10 +653,20 @@ function initDraggable ($cont) {
 					left:	pos.left,
 					top:	pos.top
 				});
+
+				updateDirectionArrows( settings );
 			}
 		});
 		
 		$document.one('mouseup', function () {
+
+			if ( directionArrows ) {
+
+				for ( var key in directionArrows ) {
+
+					directionArrows[key].removeClass('dragging');
+				}
+			}
 
 			$document.unbind("mousemove");
 
@@ -658,6 +698,59 @@ function initDraggable ($cont) {
 
 		return false;
 	});
+}
+
+function updateDirectionArrows ( settings ) {
+
+	var directionArrows = settings.directionArrows;
+
+	if ( !directionArrows ) {
+
+		return false;
+	}
+
+	var $cont	= settings.cont,
+		$holder	= settings.holder,
+		posTop	= parseInt( $holder.css('top') ) * -1,
+		posLeft	= parseInt( $holder.css('left') ) * -1;
+		right	= posLeft + $cont.width(),
+		bottom	= posTop + $cont.height(),
+		clsName	= 'state-active';
+
+	if ( posTop > 0 ) {
+
+		directionArrows.top.addClass( clsName );
+	}
+	else {
+
+		directionArrows.top.removeClass( clsName );
+	}
+
+	if ( posLeft > 0 ) {
+
+		directionArrows.left.addClass( clsName );
+	}
+	else {
+
+		directionArrows.left.removeClass( clsName );
+	}
+
+	if ( right < $holder.width() ) {
+
+		directionArrows.right.addClass( clsName );
+	}
+	else {
+
+		directionArrows.right.removeClass( clsName );
+	}
+	if ( bottom < $holder.height() ) {
+
+		directionArrows.bottom.addClass( clsName );
+	}
+	else {
+
+		directionArrows.bottom.removeClass( clsName );
+	}
 }
 
 /*
@@ -700,7 +793,7 @@ function initMousewheel ($cont) {
 /*
 * Init Hotspots clicks
 */
-function initHotspots($cont) {
+function initHotspots ($cont) {
 
 	var settings	= $cont.data('tilezoom.settings'),
 		$hotspots	= settings.hotspots,
@@ -742,13 +835,13 @@ function initHotspots($cont) {
 			top = $hotspot.css('top');
 		}
 	
-		if (left.indexOf('%')!==-1) {
+		if (left.indexOf('%') !== -1) {
 
-			left = parseInt(parseFloat(left)*$holder.width()/100);
+			left = parseInt(parseFloat(left) * $holder.width() / 100);
 		}
-		if (top.indexOf('%')!==-1) {
+		if (top.indexOf('%') !== -1) {
 
-			top = parseInt(parseFloat(top)*$holder.height()/100);
+			top = parseInt(parseFloat(top) * $holder.height() / 100);
 		}
 
 		var coords = {
@@ -775,7 +868,7 @@ function initGestures ($cont) {
 			e.preventDefault();
 		});
 		$cont.addClass('gestures');
-		
+
 		var dragging = false;
 
 		var startLeft	= 0,
@@ -1026,9 +1119,8 @@ function setSizePosition ($cont, coords, speed, callback) {
 	var levelImage = getImage(settings.level, settings);
 
 	//position
-	var ratio	= parseFloat(levelImage.width / $holder.width());
-
-	var	pos		= {},
+	var ratio	= parseFloat(levelImage.width / $holder.width()),
+		pos		= {},
 		left	= parseInt( $holder.css('left') ),
 		top		= parseInt( $holder.css('top') );
 
@@ -1082,7 +1174,7 @@ function setSizePosition ($cont, coords, speed, callback) {
 
 		width:	levelImage.width,
 		height:	levelImage.height
-	}
+	};
 
 	//apply styles
 	$tiles.hide().css(styles);
@@ -1100,11 +1192,12 @@ function setSizePosition ($cont, coords, speed, callback) {
 		height:	levelImage.height,
 		left:	pos.left,
 		top:	pos.top
+
 	}, speed, 'swing');
 	
-	$hotspots.stop(true, true).animate(styles, speed, "swing");
+	$hotspots.stop(true, true).animate(styles, speed, 'swing');
 
-	$thumb.stop(true, true).animate(styles, speed, "swing", function () {
+	$thumb.stop(true, true).animate(styles, speed, 'swing', function () {
 
 		$tiles.fadeIn(speed);
 		if (typeof callback == "function") {
@@ -1149,22 +1242,34 @@ function checkBoundaries ($cont, pos) {
 	var minLeft	= contWidth-levelImage.width-boundaryOffset.x,
 		minTop	= contHeight-levelImage.height-boundaryOffset.y;
 
-	if (pos.left < minLeft) pos.left = minLeft;
-	if (pos.top < minTop) pos.top = minTop;
+	if (pos.left < minLeft) {
 
-	if (pos.left >= boundaryOffset.x) pos.left = boundaryOffset.x;
-	if (pos.top >= boundaryOffset.y) pos.top = boundaryOffset.y;
+		pos.left = minLeft;
+	}
+	if (pos.top < minTop) {
+
+		pos.top = minTop;
+	}
+
+	if (pos.left >= boundaryOffset.x) {
+
+		pos.left = boundaryOffset.x;
+	}
+	if (pos.top >= boundaryOffset.y) {
+
+		pos.top = boundaryOffset.y;
+	}
 
 	if (levelImage.width <= contWidth) {
 
 		//move to center of container
-		pos.left = parseInt((contWidth-levelImage.width)/2);
+		pos.left = parseInt((contWidth - levelImage.width) / 2);
 	}
 
 	if (levelImage.height <= contHeight) {
 
 //		move to center of container
-		pos.top = parseInt((contHeight-levelImage.height)/2);
+		pos.top = parseInt((contHeight - levelImage.height) / 2);
 	}
 
 	//log("pos [top:"+pos.top+", left:"+pos.left+"]");
