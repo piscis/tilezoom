@@ -13,16 +13,18 @@
 	-moz-user-select:none;
 	-ms-user-select:none;
 	user-select:none;
-}
 
-.tilezoom-overviewmap .control-rectangle {
+	.control-rectangle {
 
-	position:absolute;
-	border:solid 2px red;
-}
+		position:absolute;
+		border:solid 2px red;
 
-.tilezoom-overviewmap .control-rectangle.dragging, .tilezoom-overviewmap .control-rectangle:HOVER {
+		@include box-sizing(border-box);
+	}
 
-	cursor:move;
-	background:rgba(0, 0, 0, 0.2);
+	.control-rectangle.dragging, .control-rectangle:HOVER {
+
+		cursor:move;
+		background:rgba(0, 0, 0, 0.2);
+	}
 }

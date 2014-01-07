@@ -2,6 +2,11 @@
  *Basic Layout Styles 
  */
 
+*, *:BEFORE, *:AFTER {
+
+/*	@include box-sizing(border-box); */
+}
+
 html,
 body,
 #page  {
@@ -13,8 +18,7 @@ body,
 }
 #main,
 #footer {
-	width: 960px;
-	margin: 0 auto;
+
 	overflow: hidden;
 }
 #header {
@@ -27,8 +31,9 @@ body,
 	overflow: hidden;
 } 
 #content {
-	margin: 20px 0 0 0;
-	padding: 0 10px 40px 10px;
+
+	margin:20px;
+	padding:0;
 } 
 
 /* 
@@ -106,4 +111,9 @@ ul, ol {
     padding: 0 12px;
     position: relative;
     text-decoration: none;
+}
+
+.tilezoom-overviewmap {
+
+	margin-left:50px;
 }

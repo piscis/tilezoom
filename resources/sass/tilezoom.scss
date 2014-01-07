@@ -1,4 +1,6 @@
 @import 'compass/css3';
 
 @import "../src/tilezoom/tilezoom";
-@import "../src/tilezoom/_tilezoom-directionarrows.scss";
+@import "../src/tilezoom/directionarrows";
+@import "../src/tilezoom/navigation";
+@import "../src/tilezoom/overviewmap";

@@ -1,0 +1,50 @@
+.zoom-navigation {
+
+	position:absolute;
+	right:0;
+	bottom:0;
+
+	height:30px;
+	z-index:3;
+
+	a {
+
+		float: left;
+
+		display: block;
+		line-height:30px;
+
+		font-family:'FontAwesome';
+		font-size:20px;
+
+		margin-right:10px;
+		padding:0;
+
+		&:BEFORE {
+
+			display: block;
+		}
+
+		&.zoom-in:BEFORE {
+
+			content:'\f00e';
+		}
+		&.zoom-out:BEFORE {
+
+			content:'\f010';
+		}
+		&.go-home:BEFORE {
+
+			content:'\f066';
+		}
+		&.toggle-full:BEFORE {
+
+			content:'\f0b2';
+		}
+	}
+}
+
+div.zoom-container:hover div.zoom-navigation, div.gestures div.zoom-navigation {
+
+	display: block !important;
+}
