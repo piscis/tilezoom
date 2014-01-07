@@ -127,6 +127,20 @@
 				me.doLayout(tilezoom, coords.endX, coords.endY, zoomLevel);
 			};
 
+			var superAfterToggleFullScreen = tilezoom.afterToggleFullScreen;
+			tilezoom.afterToggleFullScreen = function ( isFullScreen ) {
+
+				if ( superAfterToggleFullScreen ) {
+
+					superAfterToggleFullScreen( isFullScreen );
+				}
+
+				var x = parseInt( holder.css('left') ) * -1,
+					y = parseInt( holder.css('top') ) * -1;
+
+				me.doLayout(tilezoom, x, y, tilezoom.zoomLevel);
+			};
+
 //			Init
 			var x = parseInt( holder.css('left') ) * -1,
 				y = parseInt( holder.css('top') ) * -1;
@@ -153,15 +167,17 @@
 			var rectangleWidth	= (containerWidth / holderWidth) * 100,
 				rectangleHeight	= (containerHeight / holderHeight) * 100;
 
-			rectangleWidth	= parseInt( rectangleWidth * elementWidth / 100 ) - parseInt(controlRectangle.css('border-left-width'));
-			rectangleHeight	= parseInt( rectangleHeight * elementHeight / 100 ) - parseInt(controlRectangle.css('border-top-width')) - parseInt(controlRectangle.css('border-bottom-width'));
+			rectangleWidth	= parseInt( parseFloat( rectangleWidth * elementWidth / 100 ).toFixed(0) );
+			rectangleHeight	= parseInt( parseFloat( rectangleHeight * elementHeight / 100 ).toFixed(0) );
 
 //			calculate position
 			var rectangleLeft	= (x / holderWidth) * 100,
 				rectangleTop	= (y / holderHeight) * 100;
 
-			rectangleLeft	= parseInt( rectangleLeft * elementWidth / 100 );
-			rectangleTop	= parseInt( rectangleTop * elementHeight / 100 );
+			rectangleLeft	= parseInt( parseFloat( rectangleLeft * elementWidth / 100 ).toFixed(0) );
+			rectangleTop	= parseInt( parseFloat( rectangleTop * elementHeight / 100 ).toFixed(0) );
+
+			var w2 = rectangleLeft + rectangleWidth;
 
 			if ( rectangleLeft + rectangleWidth > elementWidth ) {
 
@@ -189,6 +205,20 @@
 				}, duration);
 			}
 			me._isInitialized = true;
+
+			if ( rectangleTop < 0 ) {
+
+				rectangleTop = 0;
+			}
+			if ( rectangleLeft < 0 ) {
+
+				rectangleLeft = 0;
+			}
+
+			if ( rectangleHeight > elementHeight ) {
+
+				rectangleHeight = elementHeight;
+			}
 
 			controlRectangle.css({
 
@@ -282,12 +312,36 @@
 						holder				= tilezoom.holder,
 						container			= tilezoom.cont,
 						holderWidth			= holder.width(),
-						holderHeight		= holder.height();
+						holderHeight		= holder.height(),
+						recLeft				= parseInt(rectangle.css('left')),
+						recTop				= parseInt(rectangle.css('top'));
 
 					var percentX	= holderWidth / elementWidth,
 						percentY	= holderHeight / elementHeight,
-						x			= parseInt( ( parseInt(rectangle.css('left')) + (rectangle.outerWidth() / 2) ) * percentX),
-						y			= parseInt( ( parseInt(rectangle.css('top')) + (rectangle.outerHeight() / 2) ) * percentY);
+						x			= parseInt( parseFloat( ( recLeft + (rectangleWidth / 2) ) * percentX).toFixed(0) ),
+						y			= parseInt( parseFloat( ( recTop + (rectangleHeight / 2) ) * percentY).toFixed(0) );
+
+					if ( recLeft == 0 ) {
+
+						x = parseInt( container.width() / 2);
+					}
+					if ( recTop == 0 ) {
+
+						y = parseInt( container.height() / 2);
+					}
+
+					var tollerance		= 3,
+						contWidthHalf	= container.width() / 2,
+						contHeightHalf	= container.height() / 2;
+
+					if ( ( tollerance + x + contWidthHalf) > holderWidth ) {
+
+						x = parseInt( parseFloat( holderWidth - contWidthHalf ).toFixed(0) );
+					}
+					if ( ( tollerance + y + contHeightHalf) > holderHeight ) {
+
+						y = parseInt( parseFloat( holderHeight - contHeightHalf ).toFixed(0) );
+					}
 
 					dragstop( x, y, tilezoom.level );
 
