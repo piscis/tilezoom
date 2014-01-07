@@ -25,32 +25,33 @@ var methods = {
 
 		var defaults = {
 
-			width:				null, // original image width in pixels. *(required) if no xml file
-			height:				null, // original image height in pixels *(required) if no xml file
-			path:				null, // tiles directory. *(required) if no xml file
-			xml:				null, // xml file with settings generated with Deep Zoom Tools
-			tileSize:			254, // tile size in pixels
-			overlap:			1, // tiles overlap
-			directionArrows:	true,
-			thumb:				'thumb.jpg', // thumbnail filename
-			format:				'jpg', // image format
-			speed:				500, //animation speed (ms)
-			startPosition:		'center',
-			mousewheel:			false, // requires mousewheel event plugin: http://plugins.jquery.com/project/mousewheel
-			gestures:			false, // requires touchit event plugin, https://github.com/danielglyde/TouchIt
-			zoomToCursor:		true, // stay the same relative distance from the edge when zooming
-			offset:				'20%', //boundaries offset (px or %). If 0 image move side to side and up to down
-			dragBoundaries:		true, // If we should constrain the drag to the boundaries
-			beforeZoom:			function ($cont, oldLevel, newLevel) { }, // callback before a zoom happens
-            afterZoom:			function ($cont, coords, level) { }, // callback after zoom has completed
-			callBefore:			function ($cont) {}, // this callback happens before dragging starts
-            callAfter:			function ($cont, coords, level) { }, // this callback happens at end of drag after released "mouseup"
-			navigation:			true, // navigation container ([true], [false], [DOM selector])
-			zoomIn:				null, // zoomIn button
-			zoomOut:			null, // zoomOut button
-			goHome:				null, // goHome button, reset to default state
-			toggleFull:			null, // toggleFull button
-			minLevel:			9
+			width:					null, // original image width in pixels. *(required) if no xml file
+			height:					null, // original image height in pixels *(required) if no xml file
+			path:					null, // tiles directory. *(required) if no xml file
+			xml:					null, // xml file with settings generated with Deep Zoom Tools
+			tileSize:				254, // tile size in pixels
+			overlap:				1, // tiles overlap
+			directionArrows:		true,
+			thumb:					'thumb.jpg', // thumbnail filename
+			format:					'jpg', // image format
+			speed:					500, //animation speed (ms)
+			startPosition:			'center',
+			mousewheel:				false, // requires mousewheel event plugin: http://plugins.jquery.com/project/mousewheel
+			gestures:				false, // requires touchit event plugin, https://github.com/danielglyde/TouchIt
+			zoomToCursor:			true, // stay the same relative distance from the edge when zooming
+			offset:					'20%', //boundaries offset (px or %). If 0 image move side to side and up to down
+			dragBoundaries:			true, // If we should constrain the drag to the boundaries
+			beforeZoom:				function ($cont, oldLevel, newLevel) { }, // callback before a zoom happens
+            afterZoom:				function ($cont, coords, level) { }, // callback after zoom has completed
+			afterToggleFullScreen:	function (isFullScreen) {},
+            callBefore:				function ($cont) {}, // this callback happens before dragging starts
+            callAfter:				function ($cont, coords, level) { }, // this callback happens at end of drag after released "mouseup"
+			navigation:				true, // navigation container ([true], [false], [DOM selector])
+			zoomIn:					null, // zoomIn button
+			zoomOut:				null, // zoomOut button
+			goHome:					null, // goHome button, reset to default state
+			toggleFull:				null, // toggleFull button
+			minLevel:				9
 		}
 
 		// iterate the matched nodeset
@@ -140,7 +141,7 @@ var methods = {
 				return false;
 			}
 
-			if (settings.minLevel <= level && level < settings.numLevels) {
+			if ( settings.minLevel <= level && level < settings.numLevels ) {
 
 				//beforeZoom callback
 				if ( typeof settings.beforeZoom == "function" ) {
@@ -395,7 +396,7 @@ function initLevel (settings) {
 	while (9 <= level && level < settings.numLevels) {
 
 		var levelImage = getImage(level, settings);
-		if (levelImage.width>=contWidth || levelImage.height>=contHeight) {
+		if ( levelImage.width >= contWidth || levelImage.height >= contHeight ) {
 
 			break;
 		}
@@ -414,15 +415,17 @@ function initTiles ($cont, level) {
 
 	var levelDir	= settings.path +'/'+ parseInt(level),
 		tiles		= getTiles(level, settings),
-		$tiles		= settings.tiles;
+		$tiles		= settings.tiles,
+		overlap		= settings.overlap;
+		tileSize	= settings.tileSize;
 
 	$tiles.html('');
 
 	$.each(tiles, function(index, tile) {
 
 		var src		= levelDir +'/'+ parseInt(tile[0]) +'_'+ parseInt(tile[1]) +'.'+ settings.format,
-			offsetX	= tile[0] == 0 ? 0 : settings.overlap,
-			offsetY	= tile[1] == 0 ? 0 : settings.overlap;
+			offsetX	= tile[0] == 0 ? 0 : overlap,
+			offsetY	= tile[1] == 0 ? 0 : overlap;
 
 		$('<img>', {
 
@@ -433,8 +436,8 @@ function initTiles ($cont, level) {
 
 			position:	'absolute',
 			zIndex:		0,
-			left:		(tile[0] * settings.tileSize - offsetX) + 'px',
-			top:		(tile[1] * settings.tileSize - offsetY) + 'px'
+			left:		(tile[0] * tileSize - offsetX) + 'px',
+			top:		(tile[1] * tileSize - offsetY) + 'px'
 		})
 		.appendTo( $tiles );
 	});
@@ -459,6 +462,7 @@ function getDimension (level, settings) {
 		return dimension;
 	}
 	else {
+
 		throw 'Invalid pyramid level';
 	}
 };
@@ -1019,7 +1023,7 @@ function initNavigation ($cont) {
 		settings.goHome = $nav.children('a.go-home');
 		
 		//toggleFull button
-		if(!$nav.children('a.toggle-full').get(0)) {
+		if( !$nav.children('a.toggle-full').get(0) ) {
 
 			$nav.append('<a class="toggle-full" href="#" title="Toggle Full Page">');
 		}
@@ -1063,13 +1067,15 @@ function initNavigation ($cont) {
 	//init toggleFull button
 	$(settings.toggleFull).unbind('click').click(function() {
 
-		var onFullScreen = function (e) {
+		var	$btn			= $(this),
+			isFullScreen	= false,
+			onFullScreen	= function (e) {
 
-			if (e.keyCode == 27) { // esc
+			if  (e.keyCode == 27 ) { // esc
 
 				$(settings.toggleFull).click(); 
 			}
-		}
+		};
 
 		if (settings.userAgent.indexOf("android") > -1) {
 
@@ -1080,22 +1086,31 @@ function initNavigation ($cont) {
 			var positionStyle = 'fixed';
 		}
 
-		if ($(this).hasClass('toggle-full-close')){
+		if ( $btn.hasClass('toggle-full-close') ){
 
 			$cont.css('position', 'relative');
-			$(this).removeClass('toggle-full-close');
+
 			$document.unbind("keyup", onFullScreen);
+
+			isFullScreen = true;
 		}
 		else {
 
 			$cont.css('position', positionStyle);
-			$(this).addClass('toggle-full-close');
+
 			$document.keyup(onFullScreen);
 		}
 
 		$cont.toggleClass('zoom-full');
+		$btn.toggleClass('toggle-full-close');
 
 		setSizePosition($cont, {}, 0);
+
+		if ( settings.afterToggleFullScreen ) {
+
+			settings.afterToggleFullScreen( isFullScreen );
+		}
+
 		return false;
 	});
 }

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>jQuery Tilezoom Plugin - 2 Dollars (7356 x 3146)</title>
+	<link rel="stylesheet" type="text/css" media="all" href="css/style.css" />
+	<link rel="stylesheet" type="text/css" media="all" href="css/tilezoom.css" />
+	<script type="text/javascript" src="js/jquery.js"></script>
+	<script type="text/javascript" src="js/jquery.mousewheel.js"></script>
+	<script type="text/javascript" src="jquery.tilezoom.js"></script>
+	<script type="text/javascript" src="jquery.tilezoom-overviewmap.js"></script>
+	<style type="text/css">
+		html, body {
+			padding: 0;
+			margin: 0;
+		}
+		#container {
+			background-color: black;
+			border: 1px solid black;
+			color: white;   /* for error messages, etc. */
+			overflow: hidden;
+			position: relative;
+
+			height: 500px;
+			margin: 0 auto;
+			margin-top: 20px;
+		}
+	</style>
+	<script type="text/javascript">
+		$(document).ready(function() {
+
+			$cont = $('#container').tilezoom({
+
+				path:		'dest/wow_files',
+				width:		28500,
+				height:		4029,
+
+				mousewheel:	true,
+				navigation:	true,
+
+				offset:		'0',
+				startLevel:	12,
+				numLevels:	15,
+				level:		12,
+				minLevel:	12,
+
+				toggleFull:	true,
+				zoomIn:		'#plus',
+				zoomOut:	'#minus',
+				goHome:		'#home'
+			});
+
+			$('#overviewMap').tilezoomOverviewMap({
+
+				tilezoom:	$cont,
+				thumb:		'dest/wow_files/thumb2.jpg'
+			});
+
+			$('#zoomTo').click(function () {
+
+				var tilezoom = $cont.data('tilezoom.settings');
+
+				$cont.tilezoom('moveTo', 14, { x:300, y:100 } );
+				console.log( tilezoom );
+			});
+		});
+	</script>
+</head>
+<body>
+	<div id="page-wrapper"><div id="page">
+		<div id="header">
+			<div class="section">
+				<h1>N7W WoW (<em>9500 x 1343</em>)</h1>
+			</div>
+		</div>
+		<div id="main">
+			<div id="content" class="clearfix"> 
+				<div id="container">
+					<div class="zoom-holder">
+						<!--
+						<div class="zoom-hotspots">
+							<a style="left:50%;top:55%;" href="#" rel="14">Thomas Jefferson</a>
+							<a style="left:63%;top:66%;" href="#" rel="12">Series</a>
+						</div>
+						-->
+					</div>
+				</div>
+				<div id="nav2"></div>
+
+				<div id="overviewMap"></div>
+			</div>
+		</div>
+	</div></div>
+
+	<button id="zoomTo">Zoom to User</button>
+</body>
+</html>			
