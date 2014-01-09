@@ -135,17 +135,20 @@
 					superAfterToggleFullScreen( isFullScreen );
 				}
 
-				var x = parseInt( holder.css('left') ) * -1,
-					y = parseInt( holder.css('top') ) * -1;
-
-				me.doLayout(tilezoom, x, y, tilezoom.zoomLevel);
+				me.updateLayout( tilezoom );
 			};
 
-//			Init
-			var x = parseInt( holder.css('left') ) * -1,
-				y = parseInt( holder.css('top') ) * -1;
+//			init
+			me.updateLayout( tilezoom );
+		},
 
-			me.doLayout(tilezoom, x, y, tilezoom.zoomLevel);
+		updateLayout: function ( tilezoom ) {
+
+			var $holder	= tilezoom.holder,
+				x		= parseInt( $holder.css('left') ) * -1,
+				y		= parseInt( $holder.css('top') ) * -1;
+
+			this.doLayout(tilezoom, x, y, tilezoom.zoomLevel);
 		},
 
 		doLayout: function ( tilezoom, x, y, zoomLevel ) {

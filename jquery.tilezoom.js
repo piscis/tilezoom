@@ -292,6 +292,27 @@ function initTilezoom (defaults, options, $cont, index) {
 
 		}, 0);
 	});
+
+//	window resize
+	var	$window				= $(window),
+		windowResizeTimer	= false;
+
+	$window.resize(function () {
+
+		if ( windowResizeTimer ) {
+
+			clearTimeout( windowResizeTimer );
+			windowResizeTimer = false;
+		}
+
+		windowResizeTimer = setTimeout(function () {
+
+			$cont.tilezoom('zoom', settings.level, {});
+
+			windowResizeTimer = false;
+
+		}, 100);
+	});
 }
 
 //parse XML
@@ -305,13 +326,13 @@ function initOptionsFromXml (xml, options, callback) {
 
 		success: function (data) {
 
-			var $image = $(data).find('Image');
+			var	$image	= $(data).find('Image'),
+				$size	= $image.find('Size');
 
 			options.tileSize	= $image.attr('TileSize');
 			options.overlap		= $image.attr('Overlap');
 			options.format		= $image.attr('Format');
 
-			var $size		= $image.find('Size');
 			options.width	= $size.attr('Width');
 			options.height	= $size.attr('Height');
 			options.path	= xml.replace('.xml', '_files');
@@ -1168,7 +1189,7 @@ function setSizePosition ($cont, coords, speed, callback) {
 		pos.top = parseInt($cont.height() / 2) - top;
 	}
 	//relative center to the event coords ( mousewheel zoom )
-	else if (coords.y) {
+	else if ( coords.y ) {
 
 		var positionTop	= coords.y - $holder.offset().top,
 			relativeTop	= coords.y - $cont.offset().top,
@@ -1179,7 +1200,7 @@ function setSizePosition ($cont, coords, speed, callback) {
 	//move center to current center ( + - zoom )
 	else {
 
-		var centerY = parseInt($cont.height()/2) - top;
+		var centerY = parseInt($cont.height() / 2) - top;
 		pos.top = -parseInt(($cont.height() / -2 ) + centerY * ratio);
 	}
 	
