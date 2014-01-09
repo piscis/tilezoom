@@ -1008,19 +1008,23 @@ function initNavigation ($cont) {
 
 	if (settings.navigation == true ) {
 
-		if (!$cont.children('div.zoom-navigation').get(0)) {
+		if ( !$cont.children('div.zoom-navigation').get(0) ) {
 
-			$cont.append('<div class="zoom-navigation">');
+			$nav = $('<div>', {
+
+				'class': 'zoom-navigation'
+			}).
+			appendTo( $cont );
 		}
 		//navigation
-		$nav = settings.nav = $cont.children('div.zoom-navigation');
+		settings.nav = $nav;
 	}
-	else if(settings.navigation != false && settings.navigation != null) {
+	else if ( settings.navigation != false && settings.navigation != null ) {
 
 		$nav = settings.nav = $(settings.navigation);
 	}
 
-	if ($nav && $nav.get(0)) {
+	if ( $nav && $nav.get(0) ) {
 
 		//zoomIn button
 		if( !$nav.children('a.zoom-in').get(0) ) {
@@ -1080,7 +1084,10 @@ function initNavigation ($cont) {
 
 		$hotspots.children().removeClass('active');
 
-		$cont.tilezoom('zoom', level, {});
+		if ( settings.level != level ) {
+
+			$cont.tilezoom('zoom', level, {});
+		}
 
 		return false;
 	});
