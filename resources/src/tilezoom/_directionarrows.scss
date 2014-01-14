@@ -18,6 +18,7 @@
 		position:absolute;
 		background:rgba(0, 0, 0, 0.5);
 
+		color:white;
 		text-align:center;
 
 		@include border-radius(5px);
@@ -68,7 +69,6 @@
 
 			span {
 
-				width:30px;
 				height:200px;
 
 				line-height:200px;
@@ -133,10 +133,6 @@
 			span {
 
 				width:200px;
-				height:30px;
-
-				line-height:30px;
-
 				margin-left:-100px;
 			}
 		}

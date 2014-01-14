@@ -10,11 +10,11 @@
  */
 (function($){
 
-function debug(s) {
+function debug (s) {
 
 	$.fn.tilezoom.debug && log(s);
 }		
-function log() {
+function log () {
 
 	window.console && console.log && console.log('[tilezoom] ' + Array.prototype.join.call(arguments,' '));
 }
@@ -1119,14 +1119,14 @@ function initNavigation ($cont) {
 			$cont.css('position', 'relative');
 
 			$document.unbind("keyup", onFullScreen);
-
-			isFullScreen = true;
 		}
 		else {
 
 			$cont.css('position', positionStyle);
 
 			$document.keyup(onFullScreen);
+
+			isFullScreen = true;
 		}
 
 		$cont.toggleClass('zoom-full');

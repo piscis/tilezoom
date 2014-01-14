@@ -1,0 +1,32 @@
+.tilezoom-container {
+
+	position:relative;
+
+	height:100%;
+
+	background:#333333;
+
+	overflow:hidden;
+
+	.tilezoom-overviewmap {
+
+		position:absolute;
+
+		left:15px;
+		bottom:15px;
+		z-index:10;
+
+		border:solid 3px white;
+		box-shadow:0 0 8px black;
+	}
+
+	.buttonmenu {
+
+		position:absolute;
+
+		li {
+
+			z-index:10;
+		}
+	}
+}

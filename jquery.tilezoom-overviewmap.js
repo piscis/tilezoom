@@ -1,10 +1,5 @@
 (function($, jQuery) {
 
-	function log () {
-
-		window.console && console.log && console.log('[tilezoomOverviewMap] ' + Array.prototype.join.call(arguments,' '));
-	}
-
 	$.fn.tilezoomOverviewMap = function (options) {
 
 		if (typeof options == 'string') {

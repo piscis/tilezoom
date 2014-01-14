@@ -44,7 +44,10 @@
 	}
 }
 
-div.zoom-container:hover div.zoom-navigation, div.gestures div.zoom-navigation {
+.gestures, .zoom-container:HOVER {
 
-	display: block !important;
+	.zoom-navigation {
+
+		display: block !important;
+	}
 }
