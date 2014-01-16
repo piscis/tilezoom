@@ -1,4 +1,4 @@
-.tilezoom-container {
+.ui-tilezoomcontainer {
 
 	position:relative;
 
@@ -8,7 +8,7 @@
 
 	overflow:hidden;
 
-	.tilezoom-overviewmap {
+	.ui-tilezoommap {
 
 		position:absolute;
 
@@ -20,7 +20,7 @@
 		box-shadow:0 0 8px black;
 	}
 
-	.buttonmenu {
+	.ui-wheelmenu {
 
 		position:absolute;
 
