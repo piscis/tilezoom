@@ -6,11 +6,13 @@
 	<link rel="stylesheet" type="text/css" media="all" href="css/style.css" />
 	<link rel="stylesheet" type="text/css" media="all" href="css/tilezoom.css" />
 	<script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
+	<script type="text/javascript" src="js/jquery-ui-1.10.3.js"></script>
+
 	<script type="text/javascript" src="js/jquery.mousewheel.js"></script>
 	<script type="text/javascript" src="jquery.tilezoom.js"></script>
-	<script type="text/javascript" src="jquery.tilezoom-overviewmap.js"></script>
-	<script type="text/javascript" src="jquery.buttonmenu.js"></script>
-	<script type="text/javascript" src="jquery.tilezoom-container.js"></script>
+	<script type="text/javascript" src="jquery.ui.tilezoommap.js"></script>
+	<script type="text/javascript" src="jquery.ui.wheelmenu.js"></script>
+	<script type="text/javascript" src="jquery.ui.tilezoomcontainer.js"></script>
 
 	<script type="text/javascript">
 		$(document).ready(function() {
@@ -50,7 +52,7 @@
 				console.log( tilezoom );
 			}); */
 
-			$('#container').tilezoomContainer({
+			$('#container').tilezoomcontainer({
 
 				tilezoom: {
 
