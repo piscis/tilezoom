@@ -51,7 +51,14 @@ var methods = {
 			zoomOut:				null, // zoomOut button
 			goHome:					null, // goHome button, reset to default state
 			toggleFull:				null, // toggleFull button
-			minLevel:				9
+			minLevel:				9,
+
+			getURL: function ( level, x, y, settings ) {
+
+				var url = settings.path +'/'+ level +'/'+ x +'_'+ y +'.'+ settings.format
+
+				return url;
+			}
 		}
 
 		// iterate the matched nodeset
@@ -434,8 +441,7 @@ function initTiles ($cont, level) {
 		level = settings.level;
 	}
 
-	var levelDir	= settings.path +'/'+ parseInt(level),
-		tiles		= getTiles(level, settings),
+	var tiles		= getTiles(level, settings),
 		$tiles		= settings.tiles,
 		overlap		= settings.overlap;
 		tileSize	= settings.tileSize;
@@ -444,7 +450,7 @@ function initTiles ($cont, level) {
 
 	$.each(tiles, function(index, tile) {
 
-		var src		= levelDir +'/'+ parseInt(tile[0]) +'_'+ parseInt(tile[1]) +'.'+ settings.format,
+		var src		= settings.getURL( parseInt(level), parseInt(tile[0]), parseInt(tile[1]), settings ),
 			offsetX	= tile[0] == 0 ? 0 : overlap,
 			offsetY	= tile[1] == 0 ? 0 : overlap;
 
