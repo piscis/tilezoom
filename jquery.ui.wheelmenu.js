@@ -33,16 +33,12 @@ $.widget('ui.wheelmenu', {
 			$menu = $('<ul>');
 		}
 
-		$('li', $menu).addClass('item');
-
 		me.menu			= $menu;
 		me.toggleButton = $toggleButton;
 
 		$element.append( $toggleButton ).append( $menu );
 
 		me.collapse();
-
-		$('li', $menu).addClass('item');
 	},
 
 	collapse: function () {
@@ -50,9 +46,9 @@ $.widget('ui.wheelmenu', {
 		var	me			= this,
 			$element	= me.element,
 			$toggleBtn	= me.toggleButton,
-			$items		= $('li', me.menu);
+			$items		= $('li', me.menu),
 
-		var elementWidth	= $element.innerWidth() / 2,
+			elementWidth	= $element.innerWidth() / 2,
 			elementHeight	= $element.innerHeight() / 2;
 
 		$toggleBtn.removeClass('expand');

@@ -21,22 +21,26 @@ $.widget('ui.tilezoommap', {
 		var me			= this,
 			options		= me.options,
 			$element	= me.element,
-			tilezoom	= options.tilezoom = options.tilezoom.data('tilezoom.settings');
+			tilezoom	= options.tilezoom = options.tilezoom.data('tilezoom.settings'),
+			$wrapper	= $('<div>').addClass('ui-tilezoommap-wrapper');
 
-		$element.css({
+		var $thumb = me.thumb = $('<img>', {
 
-			background: 'url(' +options.thumb+ ') no-repeat'
+			src: options.thumb
 		})
-		.addClass('ui-tilezoommap');
+		.appendTo( $wrapper );
+
+		$element.addClass('ui-tilezoommap');
 
 		if ( options.clickable ) {
 
-			$element.click( $.proxy(me.onClick, me) );
+			$thumb.click( $.proxy(me.onClick, me) );
 		}
 
-		me.controlRectangle	= $('<div>')
-									.addClass('control-rectangle')
-									.appendTo( $element );
+		me.controlRectangle	= $('<div>').addClass('control-rectangle').appendTo( $wrapper );
+		$wrapper.appendTo( $element );
+
+		me.wrapper = $wrapper;
 
 		if ( options.draggable ) {
 
@@ -44,6 +48,10 @@ $.widget('ui.tilezoommap', {
 
 				containment:	$element,
 				stop:			$.proxy(me.onDragStop, me)
+			})
+			.css({
+
+				position: 'absolute'
 			});
 		}
 
@@ -80,16 +88,13 @@ $.widget('ui.tilezoommap', {
 
 			me.updateLayout( tilezoom );
 		};
-
-//		init
-		me.updateLayout( tilezoom );
 	},
 
 	updateLayout: function ( tilezoom ) {
 
 		var $holder	= tilezoom.holder,
-			x		= parseInt( $holder.css('left') ) * -1,
-			y		= parseInt( $holder.css('top') ) * -1;
+			x		= Math.round( $holder.css('left') ) * -1,
+			y		= Math.round( $holder.css('top') ) * -1;
 
 		this.doLayout(tilezoom, x, y, tilezoom.zoomLevel);
 	},
@@ -100,7 +105,7 @@ $.widget('ui.tilezoommap', {
 			element				= me.element,
 			elementWidth		= element.width(),
 			elementHeight		= element.height(),
-			controlRectangle	= me.controlRectangle,
+			$rectangle			= me.controlRectangle,
 			container			= tilezoom.cont,
 			containerWidth		= container.width(),
 			containerHeight		= container.height(),
@@ -137,7 +142,7 @@ $.widget('ui.tilezoommap', {
 //		define slide animation
 		if ( duration && duration > 0 && me._isInitialized) {
 
-			me._setAnimation(controlRectangle, duration);
+			me._setAnimation($rectangle, duration);
 
 			if ( me.timer ) {
 
@@ -146,10 +151,11 @@ $.widget('ui.tilezoommap', {
 
 			me.timer = setTimeout(function () {
 
-				me._setAnimation(controlRectangle, false);
+				me._setAnimation($rectangle, false);
 
 			}, duration);
 		}
+
 		me._isInitialized = true;
 
 		if ( rectangleTop < 0 ) {
@@ -166,7 +172,7 @@ $.widget('ui.tilezoommap', {
 			rectangleHeight = elementHeight;
 		}
 
-		controlRectangle.css({
+		$rectangle.css({
 
 			left:	rectangleLeft + 'px',
 			top:	rectangleTop + 'px',
@@ -245,34 +251,37 @@ $.widget('ui.tilezoommap', {
 
 	onClick: function ( e ) {
 
-		if ( $(e.target).hasClass('ui-tilezoommap') ) {
+		var	me				= this,
+			roundFunc		= Math.round,
+			tilezoom		= me.options.tilezoom,
+			container		= tilezoom.cont,
 
-			var	me				= this,
-				tilezoom		= me.options.tilezoom,
-				rectangle		= me.controlRectangle,
-				rectangleWidth	= rectangle.outerWidth(),
-				rectangleHeight	= rectangle.outerHeight(),
-				container		= tilezoom.cont,
-				element			= me.element,
-				elementWidth	= element.width(),
-				elementHeight	= element.height(),
-				holder			= tilezoom.holder,
-				holderWidth		= holder.width(),
-				holderHeight	= holder.height();
+			rectangle		= me.controlRectangle,
+			rectangleWidth	= rectangle.outerWidth(),
+			rectangleHeight	= rectangle.outerHeight(),
 
-			var percentX	= holderWidth / elementWidth,
-				percentY	= holderHeight / elementHeight,
-				x			= parseInt( e.offsetX * percentX),
-				y			= parseInt( e.offsetY * percentY);
+			$elementWrapper	= me.wrapper,
+			elementWidth	= $elementWrapper.width(),
+			elementHeight	= $elementWrapper.height(),
 
-			var clickFn = me.options.click;
-			if ( clickFn ) {
+			holder			= tilezoom.holder,
+			holderWidth		= holder.width(),
+			holderHeight	= holder.height(),
 
-				clickFn( x, y, tilezoom.level )
-			}
+			percentX	= holderWidth / elementWidth,
+			percentY	= holderHeight / elementHeight,
+			x			= roundFunc( e.offsetX * percentX ),
+			y			= roundFunc( e.offsetY * percentY );
 
-			container.tilezoom('moveTo', tilezoom.level, { x: x, y: y } );
+		var clickFn = me.options.click;
+		if ( clickFn ) {
+
+			clickFn( x, y, tilezoom.level )
 		}
+
+		me.doLayout(tilezoom, roundFunc(x - container.width()/2), roundFunc(y - container.height()/2), tilezoom.level);
+
+		container.tilezoom('moveTo', tilezoom.level, { x: x, y: y } );
 	}
 });
 

@@ -13,17 +13,34 @@ $.widget('ui.tilezoomcontainer', {
 
 	_create: function () {
 
-		var me			= this,
-			options		= me.options,
-			$element	= me.element.addClass('ui-tilezoomcontainer');
+		var me				= this,
+			options			= me.options,
+			$element		= me.element.addClass('ui-tilezoomcontainer'),
+			$dragWrapper	= $('<div>').addClass('ui-tilezoomcontainer-wrapper').appendTo( $element );
 
 //		Tilezoom
 		me.tilezoom = $('<div>').tilezoom( options.tilezoom ).appendTo( $element );
 
-		me.overviewMap = $('<div>').tilezoommap( {
+		var settings = me.tilezoom.data('tilezoom.settings');
+
+		me.tilezoommap = $('<div>').append( $('<div class="dragwrapper">') ).tilezoommap( {
 
 			tilezoom:	me.tilezoom,
-			thumb:		'dest/wow_files/thumb2.jpg'
+			thumb:		settings.thumb[0].src
+		})
+		.draggable({
+
+			containment: $element,
+			handle:		'.dragwrapper',
+
+			start: function( e, ui ) {
+
+				console.log( e );
+			}
+		})
+		.css({
+
+			position: 'absolute'
 		})
 		.appendTo( $element );
 
@@ -44,10 +61,10 @@ $.widget('ui.tilezoomcontainer', {
 
 		var	$wheelmenu = $('<div>').append( menu ).css({
 
-			position:	'absolute',
 			top: 		'-35px',
 			right:		'-35px'
-		});
+		})
+		.appendTo( $element );
 
 		me.wheelmenu = $wheelmenu.wheelmenu({
 
@@ -60,18 +77,17 @@ $.widget('ui.tilezoomcontainer', {
 		})
 		.draggable({
 
-			containment:	$element,
+			containment:	$dragWrapper,
 			delay:			0,
 			handle:			'.ui-wheelmenu-toggle',
 
 			stop:			$.proxy(me.onWheelMenuDragStop, me)
 		})
-		.on('click', function () {
+		.css({
 
-			console.log( $wheelmenu.attr('class') );
+			position: 'absolute'
 		})
-		.on('click', 'li a', $.proxy(me.onMenubuttonClick, me))
-		.appendTo( $element );
+		.on('click', 'li a', $.proxy(me.onMenubuttonClick, me));
 
 		setTimeout(function () {
 
@@ -217,7 +233,7 @@ $.widget('ui.tilezoomcontainer', {
 
 		var me			= this,
 			settings	= me.tilezoom.data('tilezoom.settings'),
-			overviewMap	= me.overviewMap,
+			tilezoommap	= me.tilezoommap,
 			$a			= $(e.currentTarget);
 
 		if ( $a.hasClass('zoom-in') ) {
@@ -234,13 +250,13 @@ $.widget('ui.tilezoomcontainer', {
 		}
 		else if ( $a.hasClass('overviewmap') ) {
 
-			if ( overviewMap.is(":visible") ) {
+			if ( tilezoommap.is(":visible") ) {
 
-				overviewMap.hide();
+				tilezoommap.hide();
 			}
 			else {
 
-				overviewMap.show();
+				tilezoommap.show();
 			}
 		}
 

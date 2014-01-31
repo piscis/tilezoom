@@ -324,7 +324,7 @@ function initTilezoom (defaults, options, $cont, index) {
 //
 	$window.on('keyup',function( e ) {
 
-		initKeydown( e, settings );
+		initKeyup( e, settings );
 	});
 }
 
@@ -368,10 +368,10 @@ function buildMarkup ($cont, settings) {
 		$cont.append('<div class="zoom-holder">');
 	}
 
-	//holder
+//	holder
 	var $holder = settings.holder = $cont.children('div.zoom-holder');
 
-	//thumb
+//	thumb
 	var thumbPath = settings.path+'/'+settings.thumb;
 	if ( !$holder.children('img.zoom-thumb').get(0) ) {
 
@@ -379,14 +379,14 @@ function buildMarkup ($cont, settings) {
 	}
 	var $thumb = settings.thumb = $holder.children('img.zoom-thumb');
 
-	//tiles container
+//	tiles container
 	if (!$holder.children('div.zoom-tiles').get(0)) {
 
 		$thumb.after('<div class="zoom-tiles">');
 	}
 	var $tiles = settings.tiles = $holder.children('div.zoom-tiles');
 
-	//hotspots container
+//	hotspots container
 	if (!$holder.children('div.zoom-hotspots').get(0)) {
 
 		$tiles.after('<div class="zoom-hotspots">');
@@ -790,9 +790,9 @@ function updateDirectionArrows ( settings ) {
 }
 
 /*
-*	
+*	init keyup handler
 */
-function initKeydown ( e, settings ) {
+function initKeyup ( e, settings ) {
 
 	var $holder		= settings.holder,
 		$cont		= settings.cont,
@@ -859,21 +859,25 @@ function initMousewheel ( $cont ) {
 
 			if ( timer ) {
 
-				return false;
+				clearTimeout( timer );
 			}
+			else {
+
+				var coords = {
+
+					x: e.pageX,
+					y: e.pageY
+				};
+
+				var level = (delta < 0 ? settings.level -1 : settings.level + 1);
+				$cont.tilezoom('zoom', level, coords);
+			}
+
 			timer = setTimeout(function () {
 
+				console.log('out');
 				timer = false;
-			}, 2000);
-
-			var coords = {
-
-				x: e.pageX,
-				y: e.pageY
-			};
-
-			var level = (delta < 0 ? settings.level -1 : settings.level + 1);
-			$cont.tilezoom('zoom', level, coords);
+			}, 250);
 
 			return false; //don't scroll the window
 		});
