@@ -12,14 +12,8 @@
 	li {
 
 		position:absolute;
-		display:none;
 
-		&.item {
-
-			display:block;
-
-			@include transition(left 0.3s ease, top 0.3s ease);
-		}
+		@include transition(left 0.3s ease, top 0.3s ease);
 
 		&.state-active {
 

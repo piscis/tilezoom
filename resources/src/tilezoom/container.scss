@@ -1,0 +1,65 @@
+.ui-tilezoomcontainer {
+
+	position:relative;
+
+	height:100%;
+
+	background:#333333;
+
+	overflow:hidden;
+
+	/* TILEZOOMMAP */
+	.ui-tilezoommap {
+
+		position:absolute;
+
+		.dragwrapper {
+
+			position:absolute;
+			left:0;
+			top:0;
+
+			cursor:move;
+
+			width:100%;
+			height:100%;
+		}
+
+		left:15px;
+		bottom:15px;
+		z-index:10;
+
+		height:90px;
+
+		padding:5px;
+		background:white;
+
+		box-shadow:0 0 8px black;
+	}
+
+	.ui-tilezoommap-wrapper {
+
+		height:78px;
+	}
+
+	/* WHEELMENU */
+	.ui-wheelmenu {
+
+		position:absolute !important;
+
+		li {
+
+			z-index:10;
+		}
+	}
+}
+
+.ui-tilezoomcontainer-wrapper {
+
+	position:absolute;
+
+	top:-50px;
+	right:-50px;
+	bottom:-50px;
+	left:-50px;
+}

@@ -22,8 +22,9 @@
 		text-align:center;
 
 		@include border-radius(5px);
-
 		@include transition(all 0.1s linear);
+
+		@include box-sizing(content-box);
 
 		&:BEFORE {
 
