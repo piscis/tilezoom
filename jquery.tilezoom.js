@@ -320,6 +320,12 @@ function initTilezoom (defaults, options, $cont, index) {
 
 		}, 100);
 	});
+
+//
+	$window.on('keyup',function( e ) {
+
+		initKeydown( e, settings );
+	});
 }
 
 //parse XML
@@ -619,10 +625,9 @@ function initDraggable ($cont) {
 			y:	e.pageY		
 		};
 
-		// If we're at the high level of resolution, go back to the start level
+//		If we're at the high level of resolution, go back to the start level
 		var level = (settings.level < settings.numLevels - 1) ? settings.level+1 : settings.startLevel;
 
-		log("Double click! " + level);
 		$cont.tilezoom('zoom', level, coords);
 	});
 
@@ -785,9 +790,63 @@ function updateDirectionArrows ( settings ) {
 }
 
 /*
-* Init Mousewheel zoom
+*	
 */
-function initMousewheel ($cont) {
+function initKeydown ( e, settings ) {
+
+	var $holder		= settings.holder,
+		$cont		= settings.cont,
+		contWidth	= $cont.width() / 2,
+		contHeight	= $cont.height() / 2,
+		roundFunc	= Math.round,
+		left		= roundFunc((parseInt($holder.css('left')) * -1) + contWidth),
+		top			= roundFunc((parseInt($holder.css('top')) * -1) +contHeight);
+
+	switch ( e.keyCode ) {
+
+		// up
+		case 38: {
+
+			top	-= contHeight;
+			break;
+		}
+		// down
+		case 40: {
+
+			top	+= contHeight;
+			break;
+		}
+		// left
+		case 37: {
+
+			left -= contWidth;
+			break;
+		}
+		// right
+		case 39: {
+
+			left += contWidth;
+			break;
+		}
+		default: {
+
+			return true;
+		}
+	}
+
+	var coords = {
+
+		left:	roundFunc( left ),
+		top:	roundFunc( top )
+	};
+
+	$cont.tilezoom('zoom', settings.level, coords);
+}
+
+/*
+*	Init Mousewheel zoom
+*/
+function initMousewheel ( $cont ) {
 
 	var settings	= $cont.data('tilezoom.settings'),
 		$holder		= settings.holder;
@@ -1111,13 +1170,10 @@ function initNavigation ($cont) {
 			}
 		};
 
+		var positionStyle = 'fixed';
 		if (settings.userAgent.indexOf("android") > -1) {
 
-			var positionStyle = 'absolute';
-		}
-		else {
-			
-			var positionStyle = 'fixed';
+			positionStyle = 'absolute';
 		}
 
 		if ( $btn.hasClass('toggle-full-close') ){
@@ -1164,16 +1220,16 @@ function setSizePosition ($cont, coords, speed, callback) {
 		$tiles		= settings.tiles,
 		$hotspots	= settings.hotspots;
 
-	//size
+//	size
 	var levelImage = getImage(settings.level, settings);
 
-	//position
+//	position
 	var ratio	= parseFloat(levelImage.width / $holder.width()),
 		pos		= {},
 		left	= parseInt( $holder.css('left') ),
 		top		= parseInt( $holder.css('top') );
 
-	//move center to coord ( hotspot click )
+//	move center to coord ( hotspot click )
 	if ( coords.left ) {
 
 		var left = levelImage.width / $holder.width() * parseFloat(coords.left);
