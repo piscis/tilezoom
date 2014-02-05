@@ -96,6 +96,11 @@ $.widget('ui.tilezoomcontainer', {
 		}, 1000);
 	},
 
+	updateLayout: function () {
+
+		this.tilezoom.tilezoom('updateLayout');
+	},
+
 	onButtonmenuClick: function ( $element ) {
 
 		console.log( $element );

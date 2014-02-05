@@ -130,6 +130,17 @@ var methods = {
 			$cont.tilezoom('zoom', level, moveTo);
 		});
 	},
+	updateLayout: function () {
+
+		return this.each(function () {
+
+			var $cont		= $(this),
+				settings	= $cont.data('tilezoom.settings');
+
+			$cont.tilezoom('zoom', settings.level, {});
+		});
+	},
+
 	zoom: function ( level, coords, speed ) {
 
 		return this.each(function () {
@@ -314,7 +325,7 @@ function initTilezoom (defaults, options, $cont, index) {
 
 		windowResizeTimer = setTimeout(function () {
 
-			$cont.tilezoom('zoom', settings.level, {});
+			$cont.tilezoom('updateLayout');
 
 			windowResizeTimer = false;
 
