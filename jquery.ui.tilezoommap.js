@@ -139,6 +139,11 @@ $.widget('ui.tilezoommap', {
 			rectangleTop = elementHeight - rectangleHeight;
 		}
 
+		if ( rectangleWidth > elementWidth ) {
+
+			rectangleWidth = elementWidth;
+		}
+
 //		define slide animation
 		if ( duration && duration > 0 && me._isInitialized) {
 
@@ -217,7 +222,7 @@ $.widget('ui.tilezoommap', {
 			recLeft				= parseInt($rectangle.css('left')),
 			recTop				= parseInt($rectangle.css('top'));
 
-		var percentX	= holderWidth / elementWidth,
+		var	percentX	= holderWidth / elementWidth,
 			percentY	= holderHeight / elementHeight,
 			x			= parseInt( parseFloat( ( recLeft + (rectangleWidth / 2) ) * percentX).toFixed(0) ),
 			y			= parseInt( parseFloat( ( recTop + (rectangleHeight / 2) ) * percentY).toFixed(0) );
