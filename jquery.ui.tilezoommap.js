@@ -251,7 +251,7 @@ $.widget('ui.tilezoommap', {
 
 		me.options.dragstop( x, y, tilezoom.level );
 
-		container.tilezoom('moveTo', tilezoom.level, { x: x, y: y } );
+		container.tilezoom('moveTo', tilezoom.level, { left: x, top: y } );
 	},
 
 	onClick: function ( e ) {
@@ -286,7 +286,7 @@ $.widget('ui.tilezoommap', {
 
 		me.doLayout(tilezoom, roundFunc(x - container.width()/2), roundFunc(y - container.height()/2), tilezoom.level);
 
-		container.tilezoom('moveTo', tilezoom.level, { x: x, y: y } );
+		container.tilezoom('moveTo', tilezoom.level, { left: x, top: y } );
 	}
 });
 

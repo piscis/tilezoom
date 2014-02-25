@@ -114,20 +114,16 @@ var methods = {
 			$cont.tilezoom('zoom', level, coords, 0);
 		});
 	},
-	moveTo: function ( level, coords ) {
+	moveTo: function ( level, coords, callback ) {
 
 		return this.each(function () {
 
 			var $cont		= $(this),
 				settings	= $cont.data('tilezoom.settings');
 
-			var moveTo = {
+			console.log( coords );
 
-				left:	coords.left ? coords.left : coords.x,
-				top:	coords.top ? coords.top : coords.y
-			};
-
-			$cont.tilezoom('zoom', level, moveTo);
+			$cont.tilezoom('zoom', level, coords, settings.speed, callback);
 		});
 	},
 	updateLayout: function () {
@@ -141,7 +137,7 @@ var methods = {
 		});
 	},
 
-	zoom: function ( level, coords, speed ) {
+	zoom: function ( level, coords, speed, callback ) {
 
 		return this.each(function () {
 
@@ -188,6 +184,11 @@ var methods = {
 							x:	( parseInt($holder.css('left')) * -1),
 							y:	( parseInt($holder.css('top')) * -1)
 						};
+
+						if ( callback ) {
+
+							callback( $cont, retCoords, level );
+						}
 
 						settings.afterZoom( $cont, retCoords, level );
 					}
@@ -304,6 +305,7 @@ function initTilezoom (defaults, options, $cont, index) {
 				top:	parseInt( holder.height() / 2 )
 			};
 		}
+
 		setTimeout(function () {
 
 			$cont.tilezoom('zoom', settings.level, coords, 0);
@@ -1305,6 +1307,9 @@ function setSizePosition ($cont, coords, speed, callback) {
 		coords.x = ( pos.left * -1 );
 		coords.y = ( pos.top * -1 );
 	}
+
+	console.log('GO GO GO');
+	console.log( pos.left +' x '+ pos.top );
 
 	$holder.stop(true, true).animate({
 
