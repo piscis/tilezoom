@@ -121,8 +121,6 @@ var methods = {
 			var $cont		= $(this),
 				settings	= $cont.data('tilezoom.settings');
 
-			console.log( coords );
-
 			$cont.tilezoom('zoom', level, coords, settings.speed, callback);
 		});
 	},
@@ -1397,7 +1395,6 @@ function checkBoundaries ($cont, pos) {
 		pos.top = boundaryOffset.y;
 	}
 
-	console.log( pos );
 	if (levelImage.width <= contWidth) {
 
 		//move to center of container
