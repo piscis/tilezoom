@@ -185,12 +185,12 @@ var methods = {
 							y:	( parseInt($holder.css('top')) * -1)
 						};
 
-						if ( callback ) {
-
-							callback( $cont, retCoords, level );
-						}
-
 						settings.afterZoom( $cont, retCoords, level );
+					}
+
+					if ( callback ) {
+
+						callback( $cont, retCoords, level );
 					}
 
 					updateDirectionArrows(settings);
@@ -878,8 +878,8 @@ function initMousewheel ( $cont ) {
 
 				var coords = {
 
-					x: e.pageX,
-					y: e.pageY
+					relativeX: e.pageX,
+					relativeY: e.pageY
 				};
 
 				var level = (delta < 0 ? settings.level -1 : settings.level + 1);
@@ -888,7 +888,6 @@ function initMousewheel ( $cont ) {
 
 			timer = setTimeout(function () {
 
-				console.log('out');
 				timer = false;
 			}, 250);
 
@@ -1237,11 +1236,17 @@ function setSizePosition ($cont, coords, speed, callback) {
 		$tiles		= settings.tiles,
 		$hotspots	= settings.hotspots;
 
+	var holderWidth		= $holder.width(),
+		holderHeight	= $holder.height();
+
+	var contWidth	= $cont.width(),
+		contHeight	= $cont.height();
+
 //	size
 	var levelImage = getImage(settings.level, settings);
 
 //	position
-	var ratio	= parseFloat(levelImage.width / $holder.width()),
+	var ratio	= parseFloat(levelImage.width / holderWidth),
 		pos		= {},
 		left	= parseInt( $holder.css('left') ),
 		top		= parseInt( $holder.css('top') );
@@ -1249,47 +1254,57 @@ function setSizePosition ($cont, coords, speed, callback) {
 //	move center to coord ( hotspot click )
 	if ( coords.left ) {
 
-		var left = levelImage.width / $holder.width() * parseFloat(coords.left);
-		pos.left = parseInt($cont.width() / 2) - left;
+		var left = levelImage.width / holderWidth * parseFloat(coords.left);
+		pos.left = parseInt(contWidth / 2) - left;
 	}
-	//relative center to the event coords ( mousewheel zoom )
+	// center the coords
 	else if ( coords.x ) {
 
-		var positionLeft	= coords.x - $holder.offset().left,
-			relativeLeft	= coords.x - $cont.offset().left,
+		pos.left = ( coords.x - (contWidth / 2) ) * -1;
+	}
+	//relative center to the event coords ( mousewheel zoom )
+	else if ( coords.relativeX ) {
+
+		var positionLeft	= coords.relativeX - $holder.offset().left,
+			relativeLeft	= coords.relativeX - $cont.offset().left,
 			percentLeft		= positionLeft / $holder.width();
 
-		pos.left = parseInt(relativeLeft - levelImage.width * percentLeft);
+		pos.left = parseInt(positionLeft - levelImage.width * percentLeft);
 	}
 	//move center to current center ( + - zoom )
 	else {
 
-		var centerX	= parseInt($cont.width() / 2) - left;
-		pos.left	= -parseInt(($cont.width() / -2 ) + centerX * ratio);
+		var centerX	= parseInt(contWidth / 2) - left;
+		pos.left	= -parseInt((contWidth / -2 ) + centerX * ratio);
 	}
 	
 	//move center to coord ( hotspot click )
 	if ( coords.top ) {
 
-		var top = levelImage.height / $holder.height() * parseFloat(coords.top);
-		pos.top = parseInt($cont.height() / 2) - top;
+		var top = levelImage.height / holderHeight * parseFloat(coords.top);
+		pos.top = parseInt(contHeight / 2) - top;
 	}
-	//relative center to the event coords ( mousewheel zoom )
+	// center the coords
 	else if ( coords.y ) {
 
-		var positionTop	= coords.y - $holder.offset().top,
-			relativeTop	= coords.y - $cont.offset().top,
-			percentTop	= positionTop / $holder.height();
+		pos.top = ( coords.y - (contHeight / 2) ) * -1;
+	}
+	//relative center to the event coords ( mousewheel zoom )
+	else if ( coords.relativeY ) {
 
-		pos.top = parseInt(relativeTop-levelImage.height * percentTop);
+		var positionTop	= coords.relativeY - $holder.offset().top,
+			relativeTop	= coords.relativeY - $cont.offset().top,
+			percentTop	= positionTop / holderHeight;
+
+		pos.top = parseInt(relativeTop - levelImage.height * percentTop);
 	}
 	//move center to current center ( + - zoom )
 	else {
 
-		var centerY = parseInt($cont.height() / 2) - top;
-		pos.top = -parseInt(($cont.height() / -2 ) + centerY * ratio);
+		var centerY = parseInt(contHeight / 2) - top;
+		pos.top = -parseInt((contHeight / -2 ) + centerY * ratio);
 	}
-	
+
 	checkBoundaries($cont, pos);
 
 	var styles = {
@@ -1299,17 +1314,14 @@ function setSizePosition ($cont, coords, speed, callback) {
 	};
 
 	//apply styles
-	$tiles.hide().css(styles);
+	$tiles.hide().css( styles );
 
 //	add coords if values aren't set
-	if ( !coords.x && !coords.left ) {
+	if ( !coords.x && !coords.left && !coords.relativeX ) {
 
 		coords.x = ( pos.left * -1 );
 		coords.y = ( pos.top * -1 );
 	}
-
-	console.log('GO GO GO');
-	console.log( pos.left +' x '+ pos.top );
 
 	$holder.stop(true, true).animate({
 
@@ -1385,6 +1397,7 @@ function checkBoundaries ($cont, pos) {
 		pos.top = boundaryOffset.y;
 	}
 
+	console.log( pos );
 	if (levelImage.width <= contWidth) {
 
 		//move to center of container
