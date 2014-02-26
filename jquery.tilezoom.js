@@ -463,7 +463,7 @@ function initTiles ($cont, level) {
 		overlap		= settings.overlap;
 		tileSize	= settings.tileSize;
 
-	$tiles.html('');
+	$('.tile', $tiles).remove();
 
 	$.each(tiles, function(index, tile) {
 
@@ -473,8 +473,9 @@ function initTiles ($cont, level) {
 
 		$('<img>', {
 
-			id:		'zoom-' +settings.id+ '-tile-' +tile[0]+ '-' +tile[1],
-			_src:	src
+			id:			'zoom-' +settings.id+ '-tile-' +tile[0]+ '-' +tile[1],
+			'class':	'tile',
+			_src:		src
 		})
 		.css({
 
@@ -632,8 +633,8 @@ function initDraggable ($cont) {
 
 		var coords = {
 
-			x:	e.pageX,
-			y:	e.pageY		
+			relativeX: e.pageX,
+			relativeY: e.pageY		
 		};
 
 //		If we're at the high level of resolution, go back to the start level
@@ -704,7 +705,7 @@ function initDraggable ($cont) {
 				updateDirectionArrows( settings );
 			}
 		});
-		
+
 		$document.one('mouseup', function () {
 
 			if ( directionArrows ) {
@@ -1267,7 +1268,7 @@ function setSizePosition ($cont, coords, speed, callback) {
 			relativeLeft	= coords.relativeX - $cont.offset().left,
 			percentLeft		= positionLeft / $holder.width();
 
-		pos.left = parseInt(positionLeft - levelImage.width * percentLeft);
+		pos.left = parseInt(relativeLeft - levelImage.width * percentLeft);
 	}
 	//move center to current center ( + - zoom )
 	else {
@@ -1317,8 +1318,8 @@ function setSizePosition ($cont, coords, speed, callback) {
 //	add coords if values aren't set
 	if ( !coords.x && !coords.left && !coords.relativeX ) {
 
-		coords.x = ( pos.left * -1 );
-		coords.y = ( pos.top * -1 );
+//		coords.x = ( pos.left * -1 );
+//		coords.y = ( pos.top * -1 );
 	}
 
 	$holder.stop(true, true).animate({
@@ -1351,7 +1352,7 @@ function setSizePosition ($cont, coords, speed, callback) {
 function checkBoundaries ($cont, pos) {
 
 	var settings	= $cont.data('tilezoom.settings'),
-		offset		= settings.offset;
+		offset		= parseInt( settings.offset );
 
 	var level		= settings.level,
 		levelImage	= getImage(level, settings);
@@ -1368,14 +1369,14 @@ function checkBoundaries ($cont, pos) {
 	//if offset set in persantage
 	if ( settings.offset.indexOf('%') !== -1 ) {
 
-		boundaryOffset.x = contWidth * parseInt(offset) / 100;
-		boundaryOffset.y = contHeight * parseInt(offset) / 100;
+		boundaryOffset.x = contWidth * offset / 100;
+		boundaryOffset.y = contHeight * offset / 100;
 	}
 
 	//log("boundaryOffset ["+boundaryOffset.x+", "+boundaryOffset.y+"]");
 	//boundaries
-	var minLeft	= contWidth-levelImage.width-boundaryOffset.x,
-		minTop	= contHeight-levelImage.height-boundaryOffset.y;
+	var minLeft	= contWidth - levelImage.width - boundaryOffset.x,
+		minTop	= contHeight - levelImage.height - boundaryOffset.y;
 
 	if (pos.left < minLeft) {
 
@@ -1407,7 +1408,7 @@ function checkBoundaries ($cont, pos) {
 		pos.top = parseInt((contHeight - levelImage.height) / 2);
 	}
 
-	//log("pos [top:"+pos.top+", left:"+pos.left+"]");
+//	log("pos [top:"+pos.top+", left:"+pos.left+"]");
 
 	return pos;
 }
