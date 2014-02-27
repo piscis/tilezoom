@@ -479,8 +479,6 @@ function initTiles ($cont, level) {
 		})
 		.css({
 
-			position:	'absolute',
-			zIndex:		0,
 			left:		(tile[0] * tileSize - offsetX) + 'px',
 			top:		(tile[1] * tileSize - offsetY) + 'px'
 		})
@@ -567,14 +565,21 @@ function checkTiles ($cont) {
 	$.each(visibleTiles, function (index, visibleTile) {
 
 		var id		= 'zoom-' +settings.id+ '-tile-' +visibleTile[0]+ '-' +visibleTile[1],
-			$img	= $('#'+id);
+			$img	= $('#' + id);
 
-		if ( $img.get(0) ) {
+		if ( $img.length > 0 ) {
 
 			var src = $img.attr('src');
 			if( !src ) {
 
-				$img.attr('src', $img.attr('_src'));
+				$img.one('load', function() {
+
+					$img.addClass('loaded');
+				})
+				.attr({
+
+					src: $img.attr('_src')
+				});
 			}
 		}
 	});
@@ -605,7 +610,7 @@ function getVisibleTiles ($cont) {
 
 		for (y = startY; y < (tilesY + startY); y++) {
 
-			if ( x>=0 && y>=0 ) {
+			if ( x >= 0 && y >= 0 ) {
 
 				visibleTileArray[counter++] = [x, y];
 			}
@@ -1316,13 +1321,13 @@ function setSizePosition ($cont, coords, speed, callback) {
 	};
 
 	//apply styles
-	$tiles.hide().css( styles );
+	$tiles.css( styles );
 
 //	add coords if values aren't set
 	if ( !coords.x && !coords.left && !coords.relativeX ) {
 
-//		coords.x = ( pos.left * -1 );
-//		coords.y = ( pos.top * -1 );
+		coords.x = ( pos.left * -1 );
+		coords.y = ( pos.top * -1 );
 	}
 
 	$holder.addClass('moving');
@@ -1339,7 +1344,6 @@ function setSizePosition ($cont, coords, speed, callback) {
 
 	$thumb.stop(true, true).animate(styles, speed, 'swing', function () {
 
-		$tiles.fadeIn(speed);
 		if (typeof callback == "function") {
 
 			callback();

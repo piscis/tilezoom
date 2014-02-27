@@ -62,6 +62,20 @@
 		}
 	}
 
+	img.tile {
+
+		position:absolute;
+		z-index:0;
+		opacity:0;
+
+		@include transition(opacity .5s);
+
+		&.loaded {
+
+			opacity:1;
+		}
+	}
+
 /*	ZOOM-HOTSPOTS */
 	.zoom-hotspots a {
 
