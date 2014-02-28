@@ -55,9 +55,7 @@ var methods = {
 
 			getURL: function ( level, x, y, settings ) {
 
-				var url = settings.path +'/'+ level +'/'+ x +'_'+ y +'.'+ settings.format
-
-				return url;
+				return settings.path +'/'+ level +'/'+ x +'_'+ y +'.'+ settings.format;
 			}
 		}
 
@@ -107,8 +105,8 @@ var methods = {
 
 			var coords = {
 
-				left:	parseInt($holder.width() / 2),
-				top:	parseInt($holder.height() / 2)
+				left:	parseInt( $holder.width() / 2 ),
+				top:	parseInt( $holder.height() / 2 )
 			};
 
 			$cont.tilezoom('zoom', level, coords, 0);
@@ -141,7 +139,8 @@ var methods = {
 
 			var $cont		= $(this),
 				settings	= $cont.data('tilezoom.settings'),
-				$holder		= settings.holder;
+				$holder		= settings.holder,
+				sameLevel	= ( settings.level == level );
 
 			if ( typeof speed === "undefined" ) {
 
@@ -168,7 +167,10 @@ var methods = {
 				settings.level = level;
 				$cont.data('tilezoom.settings', settings);
 
-				initTiles($cont);
+				if ( !sameLevel ) {
+
+					initTiles($cont);
+				}
 
 				setSizePosition($cont, coords, speed, function() {
 
@@ -179,8 +181,8 @@ var methods = {
 
 						var retCoords = {
 
-							x:	( parseInt($holder.css('left')) * -1),
-							y:	( parseInt($holder.css('top')) * -1)
+							x: ( parseInt($holder.css('left')) * -1),
+							y: ( parseInt($holder.css('top')) * -1)
 						};
 
 						settings.afterZoom( $cont, retCoords, level );
@@ -284,6 +286,7 @@ function initTilezoom (defaults, options, $cont, index) {
 	setSizePosition($cont, {}, 0, function() {
 
 		checkTiles($cont);
+
 		var isTouchSupported = (typeof(window.ontouchstart) != 'undefined');
 		if ( isTouchSupported ) {
 
@@ -474,8 +477,8 @@ function initTiles ($cont, level) {
 		$('<img>', {
 
 			id:			'zoom-' +settings.id+ '-tile-' +tile[0]+ '-' +tile[1],
-			'class':	'tile',
-			_src:		src
+			_src:		src,
+			'class':	'tile'
 		})
 		.css({
 
@@ -579,7 +582,8 @@ function checkTiles ($cont) {
 				.attr({
 
 					src: $img.attr('_src')
-				});
+				})
+				.removeAttr('_src');
 			}
 		}
 	});
