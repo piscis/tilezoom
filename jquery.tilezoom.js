@@ -686,7 +686,7 @@ function initDraggable ($cont) {
 
 			if ( dragging ) {
 
-				$holder.addClass('moving');
+				$holder.addClass('in-action');
 
 				if ( directionArrows ) {
 
@@ -729,7 +729,7 @@ function initDraggable ($cont) {
 
 			$document.unbind("mousemove");
 
-			$holder.removeClass('moving');
+			$holder.removeClass('in-action');
 			$hotspots.removeClass('grabbing').addClass('grab');		
 
 			dragging = false;
@@ -1334,7 +1334,7 @@ function setSizePosition ($cont, coords, speed, callback) {
 		coords.y = ( pos.top * -1 );
 	}
 
-	$holder.addClass('moving');
+	$holder.addClass('in-action');
 	$holder.stop(true, true).animate({
 
 		width:	levelImage.width,
@@ -1353,7 +1353,7 @@ function setSizePosition ($cont, coords, speed, callback) {
 			callback();
 		}
 
-		$holder.removeClass('moving');
+		$holder.removeClass('in-action');
 
 		settings.inAction = false;
 		$cont.data('tilezoom.settings', settings);
