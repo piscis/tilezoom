@@ -894,7 +894,10 @@ function initMousewheel ( $cont ) {
 				};
 
 				var level = (delta < 0 ? settings.level -1 : settings.level + 1);
-				$cont.tilezoom('zoom', level, coords);
+				$cont.tilezoom('zoom', level, coords, settings.speed, function () {
+
+					$cont.focus();
+				});
 			}
 
 			timer = setTimeout(function () {
