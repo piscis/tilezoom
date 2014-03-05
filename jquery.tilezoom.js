@@ -169,6 +169,7 @@ var methods = {
 
 				if ( !sameLevel ) {
 
+					$holder.addClass('zoom-in-out');
 					initTiles($cont);
 				}
 
@@ -1356,7 +1357,7 @@ function setSizePosition ($cont, coords, speed, callback) {
 			callback();
 		}
 
-		$holder.removeClass('in-action');
+		$holder.removeClass('in-action').removeClass('zoom-in-out');
 
 		settings.inAction = false;
 		$cont.data('tilezoom.settings', settings);
