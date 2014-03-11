@@ -28,7 +28,6 @@ var methods = {
 			width:					null, // original image width in pixels. *(required) if no xml file
 			height:					null, // original image height in pixels *(required) if no xml file
 			path:					null, // tiles directory. *(required) if no xml file
-			xml:					null, // xml file with settings generated with Deep Zoom Tools
 			tileSize:				254, // tile size in pixels
 			overlap:				1, // tiles overlap
 			directionArrows:		true,
@@ -62,18 +61,7 @@ var methods = {
 		// iterate the matched nodeset
 		return this.each(function (index) {
 
-			if ( options.xml != null ) {
-
-				var $cont = $(this);
-				initOptionsFromXml(options.xml, options, function() {
-
-					initTilezoom(defaults, options, $cont, index);
-				});
-			}
-			else {
-
-				initTilezoom(defaults, options, $(this), index);
-			}		
+			initTilezoom(defaults, options, $(this), index);
 		});
 	},
 	destroy: function () {
@@ -288,6 +276,8 @@ function initTilezoom (defaults, options, $cont, index) {
 
 		checkTiles($cont);
 
+		initDraggable($cont);
+
 		var isTouchSupported = (typeof(window.ontouchstart) != 'undefined');
 		if ( isTouchSupported ) {
 
@@ -295,7 +285,6 @@ function initTilezoom (defaults, options, $cont, index) {
 		}
 		else {
 
-			initDraggable($cont);
 			initMousewheel($cont);
 		}
 
@@ -340,36 +329,6 @@ function initTilezoom (defaults, options, $cont, index) {
 	$window.on('keyup',function( e ) {
 
 		initKeyup( e, settings );
-	});
-}
-
-//parse XML
-function initOptionsFromXml (xml, options, callback) {
-
-	$.ajax({
-
-		type:		"GET",
-		url:		xml,
-		dataType:	"xml",
-
-		success: function (data) {
-
-			var	$image	= $(data).find('Image'),
-				$size	= $image.find('Size');
-
-			options.tileSize	= $image.attr('TileSize');
-			options.overlap		= $image.attr('Overlap');
-			options.format		= $image.attr('Format');
-
-			options.width	= $size.attr('Width');
-			options.height	= $size.attr('Height');
-			options.path	= xml.replace('.xml', '_files');
-
-			if ( typeof callback == "function" ) {
-
-				callback();
-		    }
-		}
 	});
 }
 
@@ -624,6 +583,41 @@ function getVisibleTiles ($cont) {
 	return visibleTileArray;
 }
 
+function initGestures ($cont) {
+
+	var settings	= $cont.data('tilezoom.settings'),
+		$holder		= settings.holder;
+
+	console.log('init initGestures');
+
+	$holder.bind('pinchopen', function ( e ) {
+
+		console.log( 'ZOOM IN' );
+		console.log( e );
+
+		if ( settings.level < settings.numLevels - 1) {
+
+			settings.inAction = false;
+			$cont.tilezoom('zoom', ( settings.level+1 ), {});
+		}
+
+		return false;
+	})
+	.bind('pinchclose', function (e) {
+
+		console.log( 'ZOOM OUT' );
+		console.log( e );
+
+		if ( settings.level > settings.minLevel ) {
+
+			settings.inAction = false;
+			$cont.tilezoom('zoom', ( settings.level-1 ), {});
+		}
+
+		return false;
+	});
+}
+
 /*
 * Init Draggable funtionality
 */
@@ -639,6 +633,7 @@ function initDraggable ($cont) {
 		startTop	= 0;
 
 	$holder.unbind('mousedown').unbind('mousemove');
+
 	$holder.dblclick(function (e) {
 
 		var coords = {
@@ -653,7 +648,9 @@ function initDraggable ($cont) {
 		$cont.tilezoom('zoom', level, coords);
 	});
 
-	$holder.mousedown(function (e) {
+	$holder.bind('mousedown touchstart', function (e) {
+
+		e = e.pageX ? e : e.originalEvent;
 
 		if ( settings.inAction ) {
 
@@ -683,7 +680,11 @@ function initDraggable ($cont) {
 			settings.callBefore($cont);
         }
 
-		$document.unbind("mousemove").mousemove(function (e) {
+		$document.unbind("mousemove touchmove").bind('mousemove touchmove', function (e) {
+
+			e = e.pageX ? e : e.originalEvent;
+
+			settings.inAction = true;
 
 			if ( dragging ) {
 
@@ -718,7 +719,9 @@ function initDraggable ($cont) {
 			}
 		});
 
-		$document.one('mouseup', function () {
+		$document.one('mouseup touchend', function () {
+
+			settings.inAction = false;
 
 			if ( directionArrows ) {
 
@@ -728,7 +731,7 @@ function initDraggable ($cont) {
 				}
 			}
 
-			$document.unbind("mousemove");
+			$document.unbind("mousemove touchmove");
 
 			$holder.removeClass('in-action');
 			$hotspots.removeClass('grabbing').addClass('grab');		
@@ -886,7 +889,7 @@ function initMousewheel ( $cont ) {
 
 				clearTimeout( timer );
 			}
-			else {
+			else if ( !settings.inAction ) {
 
 				var coords = {
 
@@ -904,7 +907,7 @@ function initMousewheel ( $cont ) {
 			timer = setTimeout(function () {
 
 				timer = false;
-			}, 250);
+			}, 150);
 
 			return false; //don't scroll the window
 		});
@@ -973,124 +976,6 @@ function initHotspots ($cont) {
 
 		$cont.tilezoom('zoom', level, coords);	
 	});
-}
-
-function initGestures ($cont) {
-	
-	var settings	= $cont.data('tilezoom.settings'),
-		$holder		= settings.holder,
-		$nav		= settings.nav;
-	
-	if (settings.gestures && typeof $.fn.touchit != "undefined") {
-
-		// gestures don't affect inside the container
-		$cont.bind('touchmove', function(e) {
-
-			e.preventDefault();
-		});
-		$cont.addClass('gestures');
-
-		var dragging = false;
-
-		var startLeft	= 0,
-			startTop	= 0;
-
-		var	startLevel,
-			startX,
-			startY,
-			pos;
-		
-		$holder.touchit({
-
-			onTouchStart: function (x, y) {
-
-				if (settings.inAction) {
-
-					return false;
-				}
-
-				$holder.stop(true, true);
-				dragging = true;
-
-				pos		= {};
-				startX	= x;
-				startY	= y;
-
-				startLeft	= parseInt($holder.css('left'));
-				startTop	= parseInt($holder.css('top'));
-				startLevel	= settings.level;
-
-				if (typeof settings.callBefore == "function" ) {
-
-					settings.callBefore($cont);
-		        }
-			},
-			onTouchMove: function (x, y) {
-
-				if ( dragging ) {
-
-					var offsetX = x - startX,
-						offsetY = y - startY;
-
-					pos.left	= startLeft + offsetX;
-					pos.top		= startTop + offsetY;
-
-					if ( settings.dragBoundaries ){
-
-						checkBoundaries($cont, pos);
-					}
-
-					$holder.css({
-
-						left:	pos.left,
-						top:	pos.top
-					});
-				}
-			},
-			onTouchEnd: function (x, y) {
-
-				dragging = false;
-				checkTiles($cont);
-				//callAfter callback
-
-				if (typeof settings.callAfter == "function") {
-
-					var coords = {
-
-						startX:	(startLeft * -1),
-						startY:	(startTop * -1),
-						endX:	(pos.left * -1),
-						endY:	(pos.top * -1)
-					};
-
-					settings.callAfter($cont, coords, settings.level);
-			    }
-			},
-			onDoubleTap: function (x, y) {
-
-				var coords = {
-
-					x:	x,
-					y:	y
-				};
-
-				// If we're at the high level of resolution, go back to the start level
-				var level = (settings.level < settings.numLevels - 1) ? 
-					settings.level+1 : settings.startLevel;
-
-				$cont.tilezoom('zoom', level, coords);
-			},
-			onPinch: function (scale) {
-
-				dragging = false;
-				var level = (scale > 1) ? 
-					startLevel + Math.floor(scale):
-					startLevel - Math.floor(1/scale);				
-
-				$cont.tilezoom('zoom', level, {});
-			}
-		});
-	}
 }
 
 /*
