@@ -52,6 +52,8 @@ var methods = {
 			toggleFull:				null, // toggleFull button
 			minLevel:				9,
 
+			autoResize:				true,
+
 			getURL: function ( level, x, y, settings ) {
 
 				return settings.path +'/'+ level +'/'+ x +'_'+ y +'.'+ settings.format;
@@ -305,25 +307,28 @@ function initTilezoom (defaults, options, $cont, index) {
 	});
 
 //	window resize
-	var	$window				= $(window),
-		windowResizeTimer	= false;
+	if ( settings.autoResize ) {
 
-	$window.resize(function () {
+		var	$window				= $(window),
+			windowResizeTimer	= false;
 
-		if ( windowResizeTimer ) {
+		$window.resize(function () {
 
-			clearTimeout( windowResizeTimer );
-			windowResizeTimer = false;
-		}
+			if ( windowResizeTimer ) {
 
-		windowResizeTimer = setTimeout(function () {
+				clearTimeout( windowResizeTimer );
+				windowResizeTimer = false;
+			}
 
-			$cont.tilezoom('updateLayout');
+			windowResizeTimer = setTimeout(function () {
 
-			windowResizeTimer = false;
+				$cont.tilezoom('updateLayout');
 
-		}, 100);
-	});
+				windowResizeTimer = false;
+
+			}, 100);
+		});
+	}
 
 //
 	$window.on('keyup',function( e ) {
@@ -588,12 +593,7 @@ function initGestures ($cont) {
 	var settings	= $cont.data('tilezoom.settings'),
 		$holder		= settings.holder;
 
-	console.log('init initGestures');
-
-	$holder.bind('pinchopen', function ( e ) {
-
-		console.log( 'ZOOM IN' );
-		console.log( e );
+	$holder.bind('pinchopen', function () {
 
 		if ( settings.level < settings.numLevels - 1) {
 
@@ -603,10 +603,7 @@ function initGestures ($cont) {
 
 		return false;
 	})
-	.bind('pinchclose', function (e) {
-
-		console.log( 'ZOOM OUT' );
-		console.log( e );
+	.bind('pinchclose', function () {
 
 		if ( settings.level > settings.minLevel ) {
 
@@ -622,17 +619,18 @@ function initGestures ($cont) {
 * Init Draggable funtionality
 */
 function initDraggable ($cont) {
-	
+
+	var isTouchSupported = (typeof(window.ontouchstart) != 'undefined');
+
 	var settings		= $cont.data('tilezoom.settings'),
 		directionArrows = settings.directionArrows,
 		$holder			= settings.holder,
-		$hotspots		= settings.hotspots;
+		$hotspots		= settings.hotspots,
+		$document		= isTouchSupported ? $holder : $(document);
 
 	var dragging	= false,
 		startLeft	= 0,
 		startTop	= 0;
-
-	$holder.unbind('mousedown').unbind('mousemove');
 
 	$holder.dblclick(function (e) {
 
@@ -671,8 +669,7 @@ function initDraggable ($cont) {
 		var startX = e.pageX,
 			startY = e.pageY;
 
-		var	$document	= $(document),
-			pos			= { };
+		var	pos	= { };
 
 		//callBefore callback
 		if (typeof settings.callBefore == "function" ) {
@@ -680,7 +677,7 @@ function initDraggable ($cont) {
 			settings.callBefore($cont);
         }
 
-		$document.unbind("mousemove touchmove").bind('mousemove touchmove', function (e) {
+		$document.bind('mousemove touchmove', function (e) {
 
 			e = e.pageX ? e : e.originalEvent;
 

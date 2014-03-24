@@ -1,8 +1,6 @@
-(function( $, undefined ) {
-
 $.widget('ui.tilezoommap', {
 
-	version: '1.5',
+	version: '1.8',
 	options: {
 
 		tilezoom:	null,
@@ -13,7 +11,8 @@ $.widget('ui.tilezoommap', {
 		clickable:	true,
 
 		dragstop:	function ( x, y, zoomLevel ) { },
-		click:		function ( x, y, zoomLevel ) { }
+		click:		function ( x, y, zoomLevel ) { },
+		load:		function ( $thumb ) { }
 	},
 
 	_create: function () {
@@ -27,6 +26,10 @@ $.widget('ui.tilezoommap', {
 		var $thumb = me.thumb = $('<img>', {
 
 			src: options.thumb
+		})
+		.on('load', function () {
+
+			options.load( $thumb );
 		})
 		.appendTo( $wrapper );
 
@@ -289,5 +292,3 @@ $.widget('ui.tilezoommap', {
 		container.tilezoom('moveTo', tilezoom.level, { left: x, top: y } );
 	}
 });
-
-}( jQuery ));

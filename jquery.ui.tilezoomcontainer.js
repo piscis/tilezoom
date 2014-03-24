@@ -21,8 +21,35 @@ $.widget('ui.tilezoomcontainer', {
 //		Tilezoom
 		me.tilezoom = $('<div>').tilezoom( options.tilezoom ).appendTo( $element );
 
+		var zoomBtn = $('<button class="zoomTo">').css({
+
+			position:	'absolute',
+			zIndex:		10,
+			left:		'10px',
+			top:		'10px'
+		})
+		.appendTo( $element )
+		.click(function () {
+
+			me.tilezoom.tilezoom('moveTo', 15, {
+
+				x:	19379,
+				y:	2338
+			}, function () {
+
+
+			});
+		});
+
 		var settings = me.tilezoom.data('tilezoom.settings');
 
+		settings.holder.click(function (e) {
+
+			var x = parseInt( settings.holder.css('left') ) * -1 + e.pageX,
+				y = parseInt( settings.holder.css('top') ) * -1 + e.pageY;
+		});
+
+		console.log( settings.thumb[0].src );
 		me.tilezoommap = $('<div>').append( $('<div class="dragwrapper">') ).tilezoommap( {
 
 			tilezoom:	me.tilezoom,
@@ -49,8 +76,8 @@ $.widget('ui.tilezoomcontainer', {
 
 			map:		$('<li><a class="overviewmap" href="#map"></a></li>'),
 			goHome:		$('<li><a class="go-home" href="#goHome"></a></li>'),
-			zoomOut:	$('<li><a class="zoom-out" href="#zoomOut"></a></li>'),
-			zoomIn:		$('<li><a class="zoom-in" href="#zoomIn"></a></li>')
+			zoomOut:	$('<li><a class="zoom-out" href="#zoomOut"><i class="fa fa-search-minus"></i></a></li>'),
+			zoomIn:		$('<li><a class="zoom-in" href="#zoomIn"><i class="fa fa-search-plus"></i></a></li>')
 		};
 
 		var menu = $('<ul>')

@@ -4,13 +4,12 @@
 	background:rgba(0, 0, 0, 0.3);
 	z-index:2;
 
-	opacity:0.3;
-
+	@include opacity(0.3);
 	@include transition(opacity 0.3s linear);
 
 	&.state-active {
 
-		opacity:1;
+		@include opacity(1);
 	}
 
 	span {

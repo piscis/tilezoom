@@ -1,40 +1,36 @@
 .ui-tilezoommap {
 
-	position:relative;
+	position: relative;
 
-	border:solid 1px black;
-
-	-webkit-touch-callout:none;
-	-webkit-user-select:none;
-	-khtml-user-select:none;
-	-moz-user-select:none;
-	-ms-user-select:none;
-	user-select:none;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 
 	img {
 
-		position:relative;
-
-		width:562px;
-		height:78px;
+		position: relative;
+        display: block;
 	}
 
 	.ui-tilezoommap-wrapper {
 
-		position:relative;
+		position: relative;
 	}
 
 	.control-rectangle {
 
-		position:absolute;
-		border:solid 2px red;
+		position: absolute;
+		border: solid 2px red;
 
 		@include box-sizing(border-box);
 	}
 
-	.control-rectangle.ui-draggable-dragging, .control-rectangle:HOVER {
+	.control-rectangle.ui-draggable-dragging, .control-rectangle:hover {
 
-		cursor:move;
-		background:rgba(0, 0, 0, 0.2);
+		cursor: move;
+		background: rgba(0, 0, 0, 0.2);
 	}
 }
