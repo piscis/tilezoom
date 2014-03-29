@@ -90,8 +90,7 @@ var methods = {
 			var $cont		= $(this),
 				settings	= $cont.data('tilezoom.settings'),
 				$holder		= settings.holder,
-				$hotspots	= settings.hotspots,
-				level		= 12;
+				$hotspots	= settings.hotspots;
 
 			var coords = {
 
@@ -99,7 +98,7 @@ var methods = {
 				top:	parseInt( $holder.height() / 2 )
 			};
 
-			$cont.tilezoom('zoom', level, coords, 0);
+			$cont.tilezoom('zoom', settings.level, coords, 0);
 		});
 	},
 	moveTo: function ( level, coords, callback ) {
@@ -274,10 +273,20 @@ function initTilezoom (defaults, options, $cont, index) {
 	var coords = {},
 		holder = settings.holder;
 
-	setSizePosition($cont, {}, 0, function() {
+	if ( settings.startPosition == 'center' ) {
+
+		var levelImage = getImage(settings.level, settings);
+
+		coords = {
+
+			left:	parseInt( levelImage.width / 2 ),
+			top:	parseInt( levelImage.height / 2 )
+		};
+	}
+
+	setSizePosition($cont, coords, 0, function() {
 
 		checkTiles($cont);
-
 		initDraggable($cont);
 
 		var isTouchSupported = (typeof(window.ontouchstart) != 'undefined');
@@ -289,28 +298,14 @@ function initTilezoom (defaults, options, $cont, index) {
 
 			initMousewheel($cont);
 		}
-
-		if ( settings.startPosition == 'center' ) {
-
-			coords = {
-
-				left:	parseInt( holder.width() / 2 ),
-				top:	parseInt( holder.height() / 2 )
-			};
-		}
-
-		setTimeout(function () {
-
-			$cont.tilezoom('zoom', settings.level, coords, 0);
-
-		}, 0);
 	});
 
 //	window resize
+	var $window = $(window);
+
 	if ( settings.autoResize ) {
 
-		var	$window				= $(window),
-			windowResizeTimer	= false;
+		var	windowResizeTimer = false;
 
 		$window.resize(function () {
 
