@@ -58,8 +58,11 @@ $.widget('ui.tilezoomcontainer', {
 			load: function ( $img ) {
 
 				var height = me.tilezoommap.outerHeight();
+				var offsetTop = me.tilezoom.offset().top; 
 
-				me.tilezoom.height( $(window).height() - height );
+				console.log( offsetTop );
+
+				me.tilezoom.height( $(window).height() - height - offsetTop );
 
 				me.tilezoom.tilezoom('center');
 			}
