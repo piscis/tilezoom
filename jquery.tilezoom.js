@@ -143,7 +143,7 @@ var methods = {
 
 			if ( settings.minLevel <= level && level < settings.numLevels ) {
 
-				//beforeZoom callback
+				// beforeZoom callback
 				if ( typeof settings.beforeZoom == "function" ) {
 
 					var res = settings.beforeZoom($cont, settings.level, level);
@@ -636,7 +636,7 @@ function initDraggable ($cont) {
 		};
 
 //		If we're at the high level of resolution, go back to the start level
-		var level = (settings.level < settings.numLevels - 1) ? settings.level+1 : settings.startLevel;
+		var level = (settings.level < settings.numLevels - 1) ? settings.level+1 : settings.minLevel;
 
 		$cont.tilezoom('zoom', level, coords);
 	});
@@ -644,6 +644,11 @@ function initDraggable ($cont) {
 	$holder.bind('mousedown touchstart', function (e) {
 
 		e = e.pageX ? e : e.originalEvent;
+
+		if ( e.targetTouches && e.targetTouches.length > 0 ) {
+
+			e = e.targetTouches[0];
+		}
 
 		if ( settings.inAction ) {
 
@@ -675,6 +680,11 @@ function initDraggable ($cont) {
 		$document.bind('mousemove touchmove', function (e) {
 
 			e = e.pageX ? e : e.originalEvent;
+
+			if ( e.targetTouches && e.targetTouches.length > 0 ) {
+
+				e = e.targetTouches[0];
+			}
 
 			settings.inAction = true;
 

@@ -53,7 +53,16 @@ $.widget('ui.tilezoomcontainer', {
 		me.tilezoommap = $('<div>').append( $('<div class="dragwrapper">') ).tilezoommap( {
 
 			tilezoom:	me.tilezoom,
-			thumb:		settings.thumb[0].src
+			thumb:		settings.thumb[0].src,
+
+			load: function ( $img ) {
+
+				var height = me.tilezoommap.outerHeight();
+
+				me.tilezoom.height( $(window).height() - height );
+
+				me.tilezoom.tilezoom('center');
+			}
 		})
 		.draggable({
 
@@ -80,11 +89,13 @@ $.widget('ui.tilezoomcontainer', {
 			zoomIn:		$('<li><a class="zoom-in" href="#zoomIn"><i class="fa fa-search-plus"></i></a></li>')
 		};
 
-		var menu = $('<ul>')
-						.append( wheelMenuItems.map )
-						.append( wheelMenuItems.goHome )
-						.append( wheelMenuItems.zoomOut )
-						.append( wheelMenuItems.zoomIn );
+		var menu = $('<ul>').append([
+
+             wheelMenuItems.map,
+             wheelMenuItems.goHome,
+             wheelMenuItems.zoomOut,
+             wheelMenuItems.zoomIn
+        ]);
 
 		var	$wheelmenu = $('<div>').append( menu ).css({
 
