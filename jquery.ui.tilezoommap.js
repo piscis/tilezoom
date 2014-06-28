@@ -35,11 +35,6 @@ $.widget('ui.tilezoommap', {
 
 		$element.addClass('ui-tilezoommap');
 
-		if ( options.clickable ) {
-
-			$thumb.click( $.proxy(me.onClick, me) );
-		}
-
 		me.controlRectangle	= $('<div>').addClass('control-rectangle').appendTo( $wrapper );
 		$wrapper.appendTo( $element );
 
@@ -91,6 +86,12 @@ $.widget('ui.tilezoommap', {
 
 			me.updateLayout( tilezoom );
 		};
+
+		if ( options.clickable ) {
+
+			$thumb.click( $.proxy(me.onClick, me) );
+		}
+
 	},
 
 	updateLayout: function ( tilezoom ) {
@@ -278,13 +279,12 @@ $.widget('ui.tilezoommap', {
 
 			percentX	= holderWidth / elementWidth,
 			percentY	= holderHeight / elementHeight,
-			x			= roundFunc( e.offsetX * percentX ),
-			y			= roundFunc( e.offsetY * percentY );
+			x			= roundFunc( (e.clientX - $(e.target).offset().left) * percentX ),
+			y			= roundFunc( (e.clientY - $(e.target).offset().top) * percentY );
 
-		var clickFn = me.options.click;
-		if ( clickFn ) {
+		if ( me.options.click ) {
 
-			clickFn( x, y, tilezoom.level )
+			me.options.click( x, y, tilezoom.level )
 		}
 
 		me.doLayout(tilezoom, roundFunc(x - container.width()/2), roundFunc(y - container.height()/2), tilezoom.level);

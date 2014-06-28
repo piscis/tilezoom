@@ -488,17 +488,17 @@ function getScale (level, settings) {
 
 function getTiles (level, settings) {
 
-	var cells = getNumTiles(level, settings),
-		yield = [];
+	var cells = getNumTiles(level, settings);
+	var tiles = [];
 
-	for ( row = 0; row <= (cells.rows-1); row++) {
+	for ( var row = 0; row <= (cells.rows-1); row++ ) {
 
-		for ( column=0; column <= (cells.columns-1); column++) {
+		for ( var column = 0; column <= (cells.columns-1); column++ ) {
 
-			yield.push(new Array(column, row));
+			tiles.push( [ column, row ] );
 		}
 	}
-	return yield;
+	return tiles;
 }
 
 function getNumTiles (level, settings) {
@@ -608,6 +608,28 @@ function initGestures ($cont) {
 
 		return false;
 	});
+
+	Hammer( $holder.get(0) ).on('doubletap', function (e) {
+
+		var touches = e.gesture ? e.gesture.touches : false;
+		if ( touches && touches.length > 0 ) {
+
+			var event = touches[0];
+			var coords = {
+
+				relativeX: event.pageX,
+				relativeY: event.pageY		
+			};
+
+//			If we're at the high level of resolution, go back to the start level
+			var level = (settings.level < settings.numLevels - 1) ? settings.level+1 : settings.minLevel;
+
+			$cont.tilezoom('zoom', level, coords);
+		}
+
+		e.preventDefault();
+		return false;
+	});
 }
 
 /*
@@ -641,7 +663,7 @@ function initDraggable ($cont) {
 		$cont.tilezoom('zoom', level, coords);
 	});
 
-	$holder.bind('mousedown touchstart', function (e) {
+	$holder.on('mousedown', function (e) {
 
 		e = e.pageX ? e : e.originalEvent;
 
@@ -677,7 +699,7 @@ function initDraggable ($cont) {
 			settings.callBefore($cont);
         }
 
-		$document.bind('mousemove touchmove', function (e) {
+		$document.on('mousemove', function (e) {
 
 			e = e.pageX ? e : e.originalEvent;
 
@@ -721,7 +743,7 @@ function initDraggable ($cont) {
 			}
 		});
 
-		$document.one('mouseup touchend', function () {
+		$document.one('mouseup', function () {
 
 			settings.inAction = false;
 
@@ -733,7 +755,7 @@ function initDraggable ($cont) {
 				}
 			}
 
-			$document.unbind("mousemove touchmove");
+			$document.off("mousemove touchmove");
 
 			$holder.removeClass('in-action');
 			$hotspots.removeClass('grabbing').addClass('grab');		
@@ -1234,7 +1256,7 @@ function setSizePosition ($cont, coords, speed, callback) {
 		top:	pos.top
 
 	}, speed, 'swing');
-	
+
 	$hotspots.stop(true, true).animate(styles, speed, 'swing');
 
 	$thumb.stop(true, true).animate(styles, speed, 'swing', function () {
