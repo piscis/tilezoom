@@ -151,6 +151,8 @@ var methods = {
 
 						return;
 					}
+
+					$cont.trigger('beforeZoom', [ settings.level, level ]);
 	            }
 
 				settings.level = level;
@@ -176,6 +178,7 @@ var methods = {
 						};
 
 						settings.afterZoom( $cont, retCoords, level );
+						$cont.trigger('afterZoom', [ retCoords, level ]);
 					}
 
 					if ( callback ) {
@@ -251,10 +254,10 @@ function initTilezoom (defaults, options, $cont, index) {
 
 		settings.directionArrows = {
 
-			top:	$('<div>', { 'class': 'zoom-arrow top' }).append( $('<span>') ),
-			right:	$('<div>', { 'class': 'zoom-arrow right' }).append( $('<span>') ),
-			bottom:	$('<div>', { 'class': 'zoom-arrow bottom' }).append( $('<span>') ),
-			left:	$('<div>', { 'class': 'zoom-arrow left' }).append( $('<span>') )
+			top:	$('<div>', { 'class': 'zoom-arrow top' }).append( '<span>' ),
+			right:	$('<div>', { 'class': 'zoom-arrow right' }).append( '<span>' ),
+			bottom:	$('<div>', { 'class': 'zoom-arrow bottom' }).append( '<span>' ),
+			left:	$('<div>', { 'class': 'zoom-arrow left' }).append( '<span>' )
 		};
 
 		var arrows = settings.directionArrows;

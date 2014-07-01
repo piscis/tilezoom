@@ -21,6 +21,19 @@ $.widget('ui.tilezoomcontainer', {
 //		Tilezoom
 		me.tilezoom = $('<div>').tilezoom( options.tilezoom ).appendTo( $element );
 
+		me.tilezoom.tilezoomtilephoto({
+
+			tileWidth:  (29 - .5),
+			tileHeight: (29 - .5),
+
+			tileClick: function ( event, tilePosX, tilePosY ) {
+
+				console.log( event );
+				console.log( tilePosX );
+				console.log( tilePosY );
+			}
+		});
+
 		var zoomBtn = $('<button class="zoomTo">').css({
 
 			position:	'absolute',
@@ -49,7 +62,6 @@ $.widget('ui.tilezoomcontainer', {
 				y = parseInt( settings.holder.css('top') ) * -1 + e.pageY;
 		});
 
-		console.log( settings.thumb[0].src );
 		me.tilezoommap = $('<div>').append( $('<div class="dragwrapper">') ).tilezoommap( {
 
 			tilezoom:	me.tilezoom,
